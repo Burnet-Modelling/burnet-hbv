@@ -1,10 +1,40 @@
+# Generic utilities script
 import pandas as pd
 import openpyxl
+import os
+import socket
+from platform import system
+
+# Sharepoint folder, used for storing data and saving outputs
+def _get_sharepoint_folder():
+    """ Adapted from HCV code, function written by @kelly.maynard"""
+
+    user = socket.gethostname()
+    platform = system()
+
+    if user in ['ChrisS-OCT25']:
+        folder = r'C:\Users\chris.seaman\Burnet Institute\WG-Modelling-Hepatitis B - Documents\Applications\Australia Optimisation'
+    else:
+        raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
+
+    return os.path.join(os.path.abspath(folder), '')
+
+# GitHub repo, used for accessing frameworks, saving calibrations and databooks.
+def _get_github_folder():
+    """ Adapted from HCV code, function written by @kelly.maynard"""
+
+    user = socket.gethostname()
+    platform = system()
+
+    if user in ['ChrisS-OCT25']:
+        folder = r'C:\Users\chris.seaman\OneDrive - Burnet Institute\Documents\GitRepos\burnet-hbv'
+    else:
+        raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
+
+    return os.path.join(os.path.abspath(folder), '')
 
 
-## Add set working location functions (sharepoint and GitHub)
-
-
+# Dynamically read and import data from tables within an Excel workbook
 def read_table(file_name: str, table_name: str) -> pd.DataFrame:
 
     """ Allows data to be read from tables in an excel workbook without needing to
