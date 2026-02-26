@@ -54,7 +54,6 @@ def pop_cal_check():
     pop.set_ylabel("Number Born Overseas (millions)")
     pop.set_ylim(bottom=0)
 
-
     # Total Aboriginal and/or Torres Strait Islander (inc as % of pop)
     fn_pops = [f"{a}{s}_fns" for a in age_bins for s in sex]
 
@@ -77,5 +76,6 @@ def pop_cal_check():
     pop.set_ylabel("Number Aboriginal and/or Torres Strait Islander \n(millions)")
     pop.set_ylim(bottom=0)
 
-    # Individual Population Indices
+    # Individual Population Indices (each population saved as own sheet in a PDF)
+
 
