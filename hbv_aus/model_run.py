@@ -1,6 +1,5 @@
 import atomica as at
-import numpy as np
-from hbv_aus.utils import _get_github_folder,_get_sharepoint_folder
+from hbv_aus.utils import _get_github_folder
 
 def calibrate_model():
     # TODO: Update to include ABC approach once ready
@@ -29,4 +28,3 @@ def calibrate_model():
 
 
 
-def extract_data()
