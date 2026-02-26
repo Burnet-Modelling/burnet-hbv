@@ -22,13 +22,18 @@ def pop_cal_check():
     total_pop.year = np.arange(1980, 2071, 1)
     total_pop.model = at.PlotData(res, "aus_pop", pops="total", pop_aggregation="sum", t_bins=1).series[0].vals
 
+    sns.set_theme(font_scale=1.5)
+    sns.set_style("whitegrid")
+
+
     fig1 = plt.figure(figsize=(12,8))
     ax = fig1.add_subplot(1,1,1)
-    ax.scatter(pop_data["year"], pop_data["total_pop"], label="Data", color="green", alpha=0.5)
-    ax.plot(total_pop["year"], total_pop["model"], label="Model", color="black")
+    ax.scatter(pop_data["year"], pop_data["total_pop"]/1e6, label="Data", color="green", alpha=0.5)
+    ax.plot(total_pop["year"], total_pop["model"]/1e6, label="Model", color="black")
     ax.set_ylim(bottom=0)
     ax.legend(loc="best")
-    ax.set_ylabel("Total Australian Population \n (medium series projection 2022-2071)")
+    ax.set_ylabel("Total Australian Population \n (millions, Medium Series Projections [2022-2071])")
+    fig1.tight_layout()
 
     # % country of birth (inc total pop size)
     age_bins = ["0-4", "5-14", "15-29", "30-49", "50-64", "65+"]
@@ -53,6 +58,7 @@ def pop_cal_check():
     pop.plot(cob_prop.year, cob_prop.mod_pop/1e6 , label="Model", color="black")
     pop.set_ylabel("Number Born Overseas (millions)")
     pop.set_ylim(bottom=0)
+    fig2.tight_layout()
 
     # Total Aboriginal and/or Torres Strait Islander (inc as % of pop)
     fn_pops = [f"{a}{s}_fns" for a in age_bins for s in sex]
@@ -75,7 +81,27 @@ def pop_cal_check():
     pop.legend(loc="best")
     pop.set_ylabel("Number Aboriginal and/or Torres Strait Islander \n(millions)")
     pop.set_ylim(bottom=0)
+    fig3.tight_layout()
 
-    # Individual Population Indices (each population saved as own sheet in a PDF)
+    # Individual Population Indices (each population saved as own sheet)
+    pop_bins = ["_aus", "_oth", "_fns"]
+    pop_names = ["Australian Born", "Born Overseas", "Aboriginal and/or \n Torres Strait Islander"]
+    age_pop = [f"{a}{s}" for a in age_bins for s in sex]
 
+    for  n,p in enumerate(pop_bins):
+        fig = plt.figure(figsize=(24,16))
+        for idx, ab in enumerate(age_pop):
+            ax = fig.add_subplot(6,2,idx+1)
+            ax.plot(at.PlotData(res, "aus_pop", pops=f"{ab}{p}", t_bins=1).series[0].tvec,
+                        at.PlotData(res, "aus_pop", pops=f"{ab}{p}", t_bins=1).series[0].vals,
+                        color="black", label="Model")
+            ax.scatter(P.parsets[0].get_par("aus_pop").ts[f"{ab}{p}"].t, P.parsets[0].get_par("aus_pop").ts[f"{ab}{p}"].vals,
+                       color="green", alpha=0.5, label="Data")
+            ax.set_ylabel("Population")
+            ax.set_title(f"{ab}")
+            ax.set_ylim(bottom=0)
+            if idx == 0:
+                ax.legend(loc="best")
+        fig.suptitle(pop_names[n])
+        fig.tight_layout()
 
