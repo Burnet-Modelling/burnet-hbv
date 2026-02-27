@@ -23,7 +23,7 @@ def pop_cal_check():
     total_pop.model = at.PlotData(res, "aus_pop", pops="total", pop_aggregation="sum", t_bins=1).series[0].vals
 
     sns.set_theme(font_scale=1.5)
-    sns.set_style("whitegrid")
+    sns.set_style("darkgrid")
 
 
     fig1 = plt.figure(figsize=(12,8))
@@ -34,6 +34,9 @@ def pop_cal_check():
     ax.legend(loc="best")
     ax.set_ylabel("Total Australian Population \n (millions, Medium Series Projections [2022-2071])")
     fig1.tight_layout()
+    fig1.savefig(_get_sharepoint_folder()+f"Outputs/Calibrations/Total_aggregates.png")
+    plt.close()
+
 
     # % country of birth (inc total pop size)
     age_bins = ["0-4", "5-14", "15-29", "30-49", "50-64", "65+"]
@@ -59,6 +62,10 @@ def pop_cal_check():
     pop.set_ylabel("Number Born Overseas (millions)")
     pop.set_ylim(bottom=0)
     fig2.tight_layout()
+    fig2.savefig(_get_sharepoint_folder()+f"Outputs/Calibrations/BOS_aggregates.png")
+    plt.close()
+
+
 
     # Total Aboriginal and/or Torres Strait Islander (inc as % of pop)
     fn_pops = [f"{a}{s}_fns" for a in age_bins for s in sex]
@@ -82,10 +89,13 @@ def pop_cal_check():
     pop.set_ylabel("Number Aboriginal and/or Torres Strait Islander \n(millions)")
     pop.set_ylim(bottom=0)
     fig3.tight_layout()
+    fig3.savefig(_get_sharepoint_folder()+f"Outputs/Calibrations/FN_aggregates.png")
+    plt.close()
+
 
     # Individual Population Indices (each population saved as own sheet)
     pop_bins = ["_aus", "_oth", "_fns"]
-    pop_names = ["Australian Born", "Born Overseas", "Aboriginal and/or \n Torres Strait Islander"]
+    pop_names = ["Australian Born", "Born Overseas", "Aboriginal and Torres Strait Islander"]
     age_pop = [f"{a}{s}" for a in age_bins for s in sex]
 
     for  n,p in enumerate(pop_bins):
@@ -104,4 +114,7 @@ def pop_cal_check():
                 ax.legend(loc="best")
         fig.suptitle(pop_names[n])
         fig.tight_layout()
+        fig.savefig(_get_sharepoint_folder()+f"Outputs/Calibrations/{pop_names[n]}_individual.png")
+        plt.close()
+
 
