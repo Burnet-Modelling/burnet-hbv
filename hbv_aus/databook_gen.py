@@ -1,8 +1,108 @@
 import atomica as at
 import numpy as np
-from hbv_aus.utils import read_table,_get_github_folder,_get_sharepoint_folder
+import pandas as pd
+from hbv_aus.utils import _get_github_folder,_get_sharepoint_folder
 
 # Version 1.0 (basic population dynamics, no behaviour populations)
+def make_age_bands(max_age=84, band_width=5):
+    bands = [f"{i}-{i+band_width-1}" for i in range(0, max_age+1, band_width)]
+    bands.append(f"{max_age+1}+")
+    return bands
+
+
+def gen_db_hbv_v2_0():
+    """
+    Produces databook using hbv_fw_v2.0.xlsx (version control for archiving)
+    """
+    # Import Framework (hbv_fw_v2.0.xlsx) to produce databook
+    F = at.ProjectFramework(_get_github_folder() + f"framework/hbv_fw_v2.0.xlsx")
+
+    age_bins = ["0-4", "5-14", "15-29", "30-49", "50-64", "65+"]# only for use in testing, will be hard coded in practice
+    sexes = ["_M", "_F"]
+    demog = ["atsi_"]
+    pops = [f"{demo}{age}{sex}" for demo in demog for sex in sexes for age in age_bins]
+
+    # Generate Databook
+    D = at.ProjectData.new(framework=F, pops=1, transfers=0, tvec=np.arange(1980, 2072, 1))
+    for idx, val in enumerate (pops):
+        if idx == 0:
+            D.rename_pop("pop_0", new_code_name=val, new_full_name=val)
+        else:
+            D.add_pop(val, val)
+    D.add_transfer("age", "aging")
+
+    # Import Data from Excel
+    # Aboriginal Torres Strait Islander Population Data
+    atsi_pop_in = pd.read_excel(_get_sharepoint_folder()+f"atsi_pop_proj.xlsx", sheet_name="Total Population")
+    atsi_death_in = pd.read_excel(_get_sharepoint_folder()+f"atsi_pop_proj.xlsx", sheet_name="Deaths")
+    atsi_birth_in = pd.read_excel(_get_sharepoint_folder()+f"atsi_pop_proj.xlsx", sheet_name="Births")
+    atsi_age_in = pd.read_excel(_get_sharepoint_folder()+f"atsi_pop_proj.xlsx", sheet_name="Aging")
+
+    # Migrants
+
+    # Other Australian Pop
+
+
+    # Total Population (temp_alive)
+    for age in age_bins:
+        D.tdve["temp_alive"].ts[f"atsi_{age}_M"] = at.TimeSeries(t=atsi_pop_in[atsi_pop_in["pop"]==age]["Year"],
+                                                                 vals = atsi_pop_in[atsi_pop_in["pop"]==age]["Male"],
+                                                                 units="Number")
+
+        D.tdve["temp_alive"].ts[f"atsi_{age}_F"] = at.TimeSeries(t=atsi_pop_in[atsi_pop_in["pop"] == age]["Year"],
+                                                                 vals=atsi_pop_in[atsi_pop_in["pop"] == age]["Female"],
+                                                                 units="Number")
+    # All Cause Mortality (death_rate):
+    for age in age_bins:
+        D.tdve["death_rate"].ts[f"atsi_{age}_M"] = at.TimeSeries(t=atsi_death_in[atsi_death_in["pop"]==age]["Year"],
+                                                                 vals = atsi_death_in[atsi_death_in["pop"]==age]["Male"],
+                                                                 units="Rate (per year)")
+
+        D.tdve["death_rate"].ts[f"atsi_{age}_F"] = at.TimeSeries(t=atsi_death_in[atsi_death_in["pop"]==age]["Year"],
+                                                                 vals = atsi_death_in[atsi_death_in["pop"]==age]["Female"],
+                                                                 units="Rate (per year)")
+    # Births (birth_rate):
+    #atsi_births_sum = atsi_birth_in.iloc[:, np.r_[0, 4,5]]
+    #atsi_births_sum = atsi_births_sum.groupby('Year', as_index=False).sum()
+
+    for age in age_bins:
+        if age == "0-4":
+            D.tdve["birth_rate"].ts[f"atsi_{age}_M"] = at.TimeSeries(t=atsi_birth_in["Year"], vals = atsi_birth_in["Male"], units = "Number (per year)")
+            D.tdve["birth_rate"].ts[f"atsi_{age}_F"] = at.TimeSeries(t=atsi_birth_in["Year"], vals = atsi_birth_in["Female"], units = "Number (per year)")
+        else:
+            D.tdve["birth_rate"].ts[f"atsi_{age}_M"].assumption = 0
+            D.tdve["birth_rate"].ts[f"atsi_{age}_F"].assumption = 0
+
+    # Migration (emig_rate, imig_rate)
+    for age in age_bins:
+        D.tdve["imig_rate"].ts[f"atsi_{age}_M"].assumption = 0
+        D.tdve["emig_rate"].ts[f"atsi_{age}_M"].assumption = 0
+        D.tdve["imig_rate"].ts[f"atsi_{age}_F"].assumption = 0
+        D.tdve["emig_rate"].ts[f"atsi_{age}_F"].assumption = 0
+
+    # Aging
+    #atsi_age_in = atsi_age_in[atsi_age_in["Age group"]!="85+"]
+    pop_from, pop_to = age_bins[:-1], age_bins[1:]
+
+    for idx, age in enumerate(pop_from):
+        D.transfers[0].ts.append((f"atsi_{age}_M", f"atsi_{pop_to[idx]}_M"), at.TimeSeries(atsi_age_in[atsi_age_in["pop_from"]==age]["Year"],
+                                                                                    atsi_age_in[atsi_age_in["pop_from"]==age]["Male"],
+                                                                                    units="Rate (per year)"))
+        D.transfers[0].ts.append((f"atsi_{age}_F", f"atsi_{pop_to[idx]}_F"), at.TimeSeries(atsi_age_in[atsi_age_in["pop_from"]==age]["Year"],
+                                                                                    atsi_age_in[atsi_age_in["pop_from"]==age]["Female"],
+                                                                                    units="Rate (per year)"))
+
+
+    D.save(_get_github_folder() + f"databook/hbv_db_v2.0_test.xlsx")
+
+
+
+
+
+
+
+
+
 
 def gen_databook():
 

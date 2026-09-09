@@ -13,7 +13,7 @@ def _get_sharepoint_folder():
     platform = system()
 
     if user in ['ChrisS-OCT25']:
-        folder = r'C:\Users\chris.seaman\Burnet Institute\WG-Modelling-Hepatitis B - Documents\Applications\Australia Optimisation'
+        folder = r'C:\Users\chris.seaman\Burnet Institute\WG-Modelling-Hepatitis B - Documents\Applications\HepAus Submission Modelling'
     else:
         raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
 
@@ -27,7 +27,7 @@ def _get_github_folder():
     platform = system()
 
     if user in ['ChrisS-OCT25']:
-        folder = r'C:\Users\chris.seaman\OneDrive - Burnet Institute\Documents\GitRepos\burnet-hbv'
+        folder = r'C:\Users\chris.seaman\Desktop\GitRepos\burnet-hbv'
     else:
         raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
 

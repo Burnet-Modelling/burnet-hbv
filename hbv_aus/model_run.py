@@ -1,8 +1,27 @@
 import atomica as at
 from hbv_aus.utils import _get_github_folder
 
+
+def run_model(db_name = "hbv_db_v2.0_test"):
+    """
+    Runs model without calibration, to be used for testing purposes (e.g., population dynamics)
+    :return:
+    """
+    F = at.ProjectFramework(_get_github_folder()+f"framework/hbv_fw_v2.0.xlsx") # import framework
+    P = at.Project(framework=F, databook = _get_github_folder()+f"databook/{db_name}.xlsx", do_run=False,
+                   sim_start = 1980, sim_end = 2071, sim_dt = 1)
+
+    res = P.run_sim(parset="default", result_name="Uncalibrated Test")
+
+    d = at.PlotData(res, "temp_alive", t_bins=1, pops="total")
+    at.plot_series(d, data=P.data)
+
+
+    return res
+
+
+
 def calibrate_model():
-    # TODO: Update to include ABC approach once ready
     # TODO: Allow external definition of FW and DB to be used
 
     #Set up Atomica project from latest update
