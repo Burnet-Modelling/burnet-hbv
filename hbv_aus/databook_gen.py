@@ -15,11 +15,11 @@ def gen_db_hbv_v2_0():
     Produces databook using hbv_fw_v2.0.xlsx (version control for archiving)
     """
     # Import Framework (hbv_fw_v2.0.xlsx) to produce databook
-    F = at.ProjectFramework(_get_github_folder() + f"framework/hbv_fw_v2.0.xlsx")
+    F = at.ProjectFramework(_get_github_folder() + f"framework/hbv_fw_v2.1_autosave.xlsx")
 
-    age_bins = ["0-4", "5-14", "15-29", "30-49", "50-64", "65+"]# only for use in testing, will be hard coded in practice
+    age_bins = ["0-14", "15-54", "65+"]# only for use in testing, will be hard coded in practice
     sexes = ["_M", "_F"]
-    demog = ["atsi_"]
+    demog = ["atsi_", "ausb_", "lros_", "hros_"]
     pops = [f"{demo}{age}{sex}" for demo in demog for sex in sexes for age in age_bins]
 
     # Generate Databook
