@@ -33,6 +33,80 @@ def _get_github_folder():
 
     return os.path.join(os.path.abspath(folder), '')
 
+def extract_hbv_effects_by_measure(
+        filepath: str,
+        sheet_name: str = "Effects - results (Yr1-Yr4)",
+) -> dict[str, pd.DataFrame]:
+    """
+    Parameters
+    ----------
+    filepath : path to the .xlsx workbook
+    sheet_name : name of the effects sheet (Yr1-Yr4)
+
+    Returns
+    -------
+    dict mapping measure name -> DataFrame (index=year, columns=population)
+    """
+    wb = openpyxl.load_workbook(filepath, data_only=True)
+    ws = wb[sheet_name]
+
+    rows = list(ws.iter_rows(values_only=True))
+
+    measure_row = rows[0]  # measure name, repeated across each 4-year block
+    year_row = rows[1]  # year for each column within a block
+    data_rows = rows[2:]  # population rows
+
+    # Build column -> (measure, year) map, skipping column 0 (population label)
+    col_measure_year = {}
+    for col_idx in range(1, len(measure_row)):
+        measure = measure_row[col_idx]
+        year = year_row[col_idx]
+        if measure is None or year is None:
+            continue
+        col_measure_year[col_idx] = (measure, year)
+
+    # Keep only rows whose population label starts with "HBV"
+    hbv_rows = [
+        row for row in data_rows
+        if row[0] is not None and str(row[0]).strip().upper().startswith("HBV")
+    ]
+
+    # Group columns by measure
+    measures = {}
+    for col_idx, (measure, year) in col_measure_year.items():
+        measures.setdefault(measure, []).append((col_idx, year))
+
+    # Keep only measures that are actually HBV measures (their column-block
+    # sits under the "HBV ..." header), since HCV measure columns are all
+    # None once non-HBV population rows are dropped.
+    measures = {
+        measure: col_years
+        for measure, col_years in measures.items()
+        if str(measure).strip().upper().startswith("HBV")
+    }
+
+    result = {}
+    for measure, col_years in measures.items():
+        # sort columns by year for a tidy year-ordered index
+        col_years_sorted = sorted(col_years, key=lambda cy: cy[1])
+        years = [cy[1] for cy in col_years_sorted]
+        cols = [cy[0] for cy in col_years_sorted]
+
+        pop_names = [row[0] for row in hbv_rows]
+        data = {
+            pop_name: [row[col_idx] for col_idx in cols]
+            for pop_name, row in zip(pop_names, hbv_rows)
+        }
+
+        df = pd.DataFrame(data, index=years)
+        df.index.name = "Year"
+        df.columns.name = "Population"
+        result[measure] = df
+
+    return result
+
+
+
 
 # Dynamically read and import data from tables within an Excel workbook
 def read_table(file_name: str, table_name: str) -> pd.DataFrame:

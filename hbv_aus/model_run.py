@@ -1,5 +1,5 @@
 import atomica as at
-from hbv_aus.utils import _get_github_folder
+from hbv_aus.utils import _get_github_folder,extract_hbv_effects_by_measure
 import pandas as pd
 
 
@@ -79,11 +79,7 @@ def export_hepaus_baselines():
 
 
 
-
-
-
-
-def run_hepaus_scenarios():
+def run_hepaus_scenarios(local_ref = "C:/Users/chris.seaman/Burnet Institute/WG-Modelling - Documents/Viral hep modelling/Strategy implementation/"):
     # TODO: Incorporate uncertainty analysis
 
     """
@@ -94,6 +90,11 @@ def run_hepaus_scenarios():
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
     DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
     CAL_PATH = _get_github_folder() + f"/calibrations/"
+
+    # Import scenario scale-up values
+    scenario_inputs = extract_hbv_effects_by_measure(local_ref+"Hepatitis_Stategy_Cost_Worksheet v0.2.xlsx")
+
+
 
 
 
