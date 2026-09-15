@@ -1,42 +1,101 @@
 import atomica as at
 from hbv_aus.utils import _get_github_folder
+import pandas as pd
 
 
-def run_model(db_name = "hbv_db_v2.0_test"):
-    """
-    Runs model without calibration, to be used for testing purposes (e.g., population dynamics)
-    :return:
-    """
-    F = at.ProjectFramework(_get_github_folder()+f"framework/hbv_fw_v2.0.xlsx") # import framework
-    P = at.Project(framework=F, databook = _get_github_folder()+f"databook/{db_name}.xlsx", do_run=False,
-                   sim_start = 1980, sim_end = 2071, sim_dt = 1)
+def hepaus_model_cal():
+
+    """ Run the calibration using YAML files and save results to a spreadsheet"""
+
+    # Set Paths
+    FW_PATH = _get_github_folder()+f"/framework/hbv_fw_v2.1_autosave.xlsx"
+    DB_PATH =  _get_github_folder()+f"/databook/claude_hbv_hepaus_db.xlsx"
+    YAML_PATH =  _get_github_folder()+f"/calibrations/"
+
+    # Get Items
+    F = at.ProjectFramework(FW_PATH)
+    P = at.Project(framework=F, databook = DB_PATH, do_run = False,
+                            sim_start = 1980, sim_end = 2071, sim_dt=1)
+
+    # Run calibrations and save y_factors
+    cal = P.parsets[0].copy()
+
+    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/calibrate_populations.yaml")
+    #cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/calibrate_epidemiology.yaml")
+    # cal = P.calibrate(parset = cal, yaml = _get_github_folder()+f"calibrations/YAML/calibrate_care.yaml") # only if needed
+    cal.save_calibration(YAML_PATH+"Y-factors/hbv_hepaus_calibrations.xlsx")
+
+
+def run_hepaus_uncalibrated():
+
+    """ For rapid testing of changes to Framework etc, can run an uncalibrated model and
+    returns a dictionary of project & results set for analysis"""
+    FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+
+    F = at.ProjectFramework(FW_PATH)
+    P = at.Project(framework=F, databook=DB_PATH, do_run=False,
+                   sim_start=1980, sim_end=2071, sim_dt=1)
 
     res = P.run_sim(parset="default", result_name="Uncalibrated Test")
 
-    d = at.PlotData(res, "temp_alive", t_bins=1, pops="total")
-    at.plot_series(d, data=P.data)
+    return {"Project": P, "Results": res}
 
 
-    return res
+def export_hepaus_baselines():
+
+    """ Export data needed for the HepAus spreadsheet used for running scenarios in a .xlsx sheet"""
+    FW_PATH = _get_github_folder()+f"/framework/hbv_fw_v2.1_autosave.xlsx"
+    DB_PATH =  _get_github_folder()+f"/databook/claude_hbv_hepaus_db.xlsx"
+    CAL_PATH =  _get_github_folder()+f"/calibrations/"
+
+    # Run the model and extract: testing, treatment, and linkage to care rates (for now)
+    F = at.ProjectFramework(FW_PATH)
+    P = at.Project(framework=F, databook=DB_PATH, do_run=False,
+                   sim_start=1980, sim_end=2071, sim_dt=1)
+
+    cal = P.parsets[0].load_calibration(CAL_PATH+"Y-factors/hbv_hepaus_calibrations.xlsx")
+    res = P.run_sim(parset=cal, result_name="Calibrated")
+
+    # Export data to excel (2026 rate for each model population)
+    populations = P.parsets[0].pop_names
+    pars = ["diag_rate", "treat_rate", "ltc_rate"]
+    export_pars = pd.DataFrame(columns = ["par"]+populations)
+    export_pars.par = pars
+    export_pars = export_pars.set_index('par', drop=True)
+
+    for pop in populations:
+        for par in pars:
+            store = pd.DataFrame(columns = ["year", "val"])
+            store.year = at.PlotData(res, outputs = par, t_bins =1, pops=pop).series[0].tvec
+            store.val = at.PlotData(res, outputs=par, t_bins=1, pops=pop).series[0].vals
+
+            for i in range(len(store)):
+                if store.year[i] == 2026.5:
+                    export_pars.at[par, pop] = store.val[i]
+
+    # Save to excel
+    export_pars.to_excel(_get_github_folder()+f"baseline_hepaus_pars.xlsx")
 
 
 
-def calibrate_model():
-    # TODO: Allow external definition of FW and DB to be used
 
-    #Set up Atomica project from latest update
-    F = at.ProjectFramework(_get_github_folder()+f"framework/fw_popsizes.xlsx")
-    P = at.Project(framework=F, databook=_get_github_folder() + f"databook/db_demographics.xlsx",
-                                do_run = False, sim_start = 1980, sim_end = 2071, sim_dt = 1)
-    cal = P.parsets[0].copy()
 
-    # Population Calibrations
-    cal = P.calibrate(parset = cal, yaml = _get_github_folder()+f"calibrations/YAML/calibrate_populations.yaml")
-    # TODO: Disease/Prevalence Calibrations
-    # TODO: Care Calibrations
 
-    # Save Calibration to GitHub
-    cal.save_calibration(_get_github_folder()+f"calibrations/Y-factors/calibrate_populations.xlsx")
+
+def run_hepaus_scenarios():
+    # TODO: Incorporate uncertainty analysis
+
+    """
+    Runs the full analysis and saves results as a pickle (.pkl) file for post-processing (plotting, export to excel, etc)
+    :return:
+    """
+
+    FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+    CAL_PATH = _get_github_folder() + f"/calibrations/"
+
+
 
 
 

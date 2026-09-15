@@ -5,6 +5,14 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from hbv_aus.utils import _get_github_folder, _get_sharepoint_folder
 
+def hepaus_outputs_excel():
+    pass
+
+def hepaus_outputs_plot():
+    pass
+
+
+
 def pop_cal_check():
 
     # Run the model

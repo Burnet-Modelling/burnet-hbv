@@ -10,16 +10,16 @@ def make_age_bands(max_age=84, band_width=5):
     return bands
 
 
-def gen_db_hbv_v2_0():
+def gen_db_hbv_v2_1():
     """
-    Produces databook using hbv_fw_v2.0.xlsx (version control for archiving)
+    Produces databook using hbv_fw_v2.1.xlsx (HepAus model informed by HepB-BD in SA model)
     """
-    # Import Framework (hbv_fw_v2.0.xlsx) to produce databook
+    # Import Framework to produce databook
     F = at.ProjectFramework(_get_github_folder() + f"framework/hbv_fw_v2.1_autosave.xlsx")
 
-    age_bins = ["0-14", "15-54", "65+"]# only for use in testing, will be hard coded in practice
+    age_bins = ["0-14", "15-64", "65+"]# only for use in testing, will be hard coded in practice
     sexes = ["_M", "_F"]
-    demog = ["atsi_", "ausb_", "lros_", "hros_"]
+    demog = ["atsi_", "ausb_", "lros_", "hros_"] # Aboriginal Torres Strait Islander, Aus Born, Low Risk Overseas, High Risk Overseas
     pops = [f"{demo}{age}{sex}" for demo in demog for sex in sexes for age in age_bins]
 
     # Generate Databook
@@ -30,6 +30,40 @@ def gen_db_hbv_v2_0():
         else:
             D.add_pop(val, val)
     D.add_transfer("age", "aging")
+
+    ### Population Demographics ###
+
+    #pop_data = # Add excel sheet as reference (save in SharePoint)
+
+    # Total Population Size
+
+    # Births (also used for estimating preg_rate for MTCT)
+
+    # All Cause Mortality
+
+    # Emigration Rate (0 for ATSI)
+
+    ### Initial Conditions ###
+
+    ### Immigration Model (note: numbers handled in population demographics) ###
+
+    ### MTCT Model (inc. interaction matrix) ###
+
+    ## Horizontal Transmission Matrix ###
+
+    ### Natural History and Effectiveness Values ###
+
+    ### Care Cascade ###
+
+    ### Calibration ###
+
+
+    D.save(_get_github_folder() + f"databook/hbv_hepaus_db.xlsx")
+
+
+
+
+
 
     # Import Data from Excel
     # Aboriginal Torres Strait Islander Population Data
