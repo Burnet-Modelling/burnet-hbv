@@ -6,6 +6,80 @@ import seaborn as sns
 from hbv_aus.utils import _get_github_folder, _get_sharepoint_folder
 import openpyxl
 
+
+def plot_calibration_by_pop(par_name, ncols=4, pop_names=None, save_path=None):
+    """
+    Plot model output vs input/data values for a given parameter, with one panel per population.
+
+    Mirrors the "Individual Population Indices" pattern from pop_cal_check(), generalised to
+    any parameter/characteristic and any population set, rather than being hard-coded to
+    "aus_pop" and a fixed 3-population grouping.
+
+    :param par_name: code name of the parameter/characteristic/compartment to plot (e.g. "diag_measure",
+                      "total_pop", "hepb_prev"). Function-derived parameters (e.g. "diag_rate") have no
+                      input data to scatter, so only the model line will be shown for those.
+    :param ncols: number of subplot columns in the panel grid
+    :param pop_names: populations to plot (defaults to all populations in P.parsets[0])
+    :param save_path: if given, the figure is saved to this path (e.g. via _get_sharepoint_folder())
+    :return: the matplotlib Figure
+    """
+
+    FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+    CAL_PATH = _get_github_folder() + f"/calibrations/"
+
+    F = at.ProjectFramework(FW_PATH)
+    P = at.Project(framework=F, databook=DB_PATH, do_run=False,
+                   sim_start=1980, sim_end=2071, sim_dt=1)
+
+    parset = P.parsets[0].copy()
+    parset.load_calibration(CAL_PATH + "Y-factors/hbv_hepaus_calibrations.xlsx")
+    res = P.run_sim(parset=parset, result_name="Calibrated")
+
+    pop_names = pop_names or parset.pop_names
+    nrows = int(np.ceil(len(pop_names) / ncols))
+
+    sns.set_theme(font_scale=1.2)
+    sns.set_style("darkgrid")
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6 * ncols, 4 * nrows), squeeze=False)
+    axes = axes.flatten()
+
+    for idx, pop in enumerate(pop_names):
+        ax = axes[idx]
+
+        d = at.PlotData(res, outputs=par_name, pops=pop, t_bins=1).series[0]
+        ax.plot(d.tvec, d.vals, color="black", label="Model")
+
+        # Only data-backed parameters have real input data points to overlay - function-derived
+        # parameters (e.g. rates computed from a Framework formula) will have an empty TimeSeries here.
+        try:
+            ts = parset.get_par(par_name).ts[pop]
+            if ts.has_time_data:
+                ax.scatter(ts.t, ts.vals, color="green", alpha=0.6, label="Data")
+        except KeyError:
+            pass  # parameter not defined for this population - just show the model line
+
+        ax.set_title(pop)
+        ax.set_ylim(bottom=0)
+        if idx == 0:
+            ax.legend(loc="best")
+
+    # Hide any unused panels if len(pop_names) doesn't fill the grid exactly
+    for ax in axes[len(pop_names):]:
+        fig.delaxes(ax)
+
+    fig.suptitle(par_name)
+    fig.tight_layout()
+
+    if save_path:
+        fig.savefig(save_path)
+
+    return fig
+
+plot_calibration_by_pop("ltc_cov", ncols=4, pop_names=None, save_path=None)
+
+
 def hepaus_outputs_excel():
     pass
 
