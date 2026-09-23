@@ -119,7 +119,7 @@ def gen_db_hbv_v2_1():
             y, v = weight
             ts = at.TimeSeries(t=y, vals=v, units="N.A.")
         else:
-            ts = at.TimeSeries(assumption=weight, units="N.A")
+            ts = at.TimeSeries(assumption=weight, units="N.A.")
         interaction_mtct.ts[(from_pop, to_pop)] = ts
 
     # Interaction Matrix: Horizontal Transmission (assume within population only)
@@ -128,25 +128,25 @@ def gen_db_hbv_v2_1():
     for age_f in age_bins:
         for age_t in age_bins:
             # ATSI
-            interaction_horiz.ts[(f"atsi_{age_f}_M", f"atsi_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"atsi_{age_f}_F", f"atsi_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"atsi_{age_f}_F", f"atsi_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"atsi_{age_f}_M", f"atsi_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
+            interaction_horiz.ts[(f"atsi_{age_f}_M", f"atsi_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"atsi_{age_f}_F", f"atsi_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"atsi_{age_f}_F", f"atsi_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"atsi_{age_f}_M", f"atsi_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
             # Aus Born
-            interaction_horiz.ts[(f"ausb_{age_f}_M", f"ausb_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"ausb_{age_f}_F", f"ausb_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"ausb_{age_f}_F", f"ausb_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"ausb_{age_f}_M", f"ausb_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
+            interaction_horiz.ts[(f"ausb_{age_f}_M", f"ausb_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"ausb_{age_f}_F", f"ausb_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"ausb_{age_f}_F", f"ausb_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"ausb_{age_f}_M", f"ausb_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
             # HROS
-            interaction_horiz.ts[(f"hros_{age_f}_M", f"hros_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"hros_{age_f}_F", f"hros_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"hros_{age_f}_F", f"hros_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A")
-            interaction_horiz.ts[(f"hros_{age_f}_M", f"hros_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A")
+            interaction_horiz.ts[(f"hros_{age_f}_M", f"hros_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"hros_{age_f}_F", f"hros_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"hros_{age_f}_F", f"hros_{age_t}_M")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
+            interaction_horiz.ts[(f"hros_{age_f}_M", f"hros_{age_t}_F")] = at.TimeSeries(assumption = 1.0, units = "N.A.")
             #LROS
-            interaction_horiz.ts[(f"lros_{age_f}_M", f"lros_{age_t}_M")] = at.TimeSeries(assumption=1.0, units="N.A")
-            interaction_horiz.ts[(f"lros_{age_f}_F", f"lros_{age_t}_F")] = at.TimeSeries(assumption=1.0, units="N.A")
-            interaction_horiz.ts[(f"lros_{age_f}_F", f"lros_{age_t}_M")] = at.TimeSeries(assumption=1.0, units="N.A")
-            interaction_horiz.ts[(f"lros_{age_f}_M", f"lros_{age_t}_F")] = at.TimeSeries(assumption=1.0, units="N.A")
+            interaction_horiz.ts[(f"lros_{age_f}_M", f"lros_{age_t}_M")] = at.TimeSeries(assumption=1.0, units="N.A.")
+            interaction_horiz.ts[(f"lros_{age_f}_F", f"lros_{age_t}_F")] = at.TimeSeries(assumption=1.0, units="N.A.")
+            interaction_horiz.ts[(f"lros_{age_f}_F", f"lros_{age_t}_M")] = at.TimeSeries(assumption=1.0, units="N.A.")
+            interaction_horiz.ts[(f"lros_{age_f}_M", f"lros_{age_t}_F")] = at.TimeSeries(assumption=1.0, units="N.A.")
 
     # Population Transfer (Aging)
     age_from, age_to = age_bins[:-1], age_bins[1:]
@@ -291,7 +291,7 @@ def gen_db_hbv_v2_1():
                  D.tdve[par].ts[pop] = at.TimeSeries(t=[1980], vals=temp[pop].iloc[0], units = "Proportion")
         else:
             for pop in pops:
-                 D.tdve[par].ts[pop] = at.TimeSeries(t=[1980], vals=temp[pop].iloc[0], units = "N.A")
+                 D.tdve[par].ts[pop] = at.TimeSeries(t=[1980], vals=temp[pop].iloc[0], units = "N.A.")
 
 
     # Calibration Data
@@ -301,7 +301,7 @@ def gen_db_hbv_v2_1():
         temp = calib_data[calib_data.par==par]
         if par == "hep_dth":
             for pop in pops:
-                D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="N.A")
+                D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="N.A.")
         else:
             for pop in pops:
                 D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="Fraction")
