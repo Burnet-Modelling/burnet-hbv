@@ -3,6 +3,45 @@ from hbv_aus.utils import _get_github_folder,extract_hbv_effects_by_measure
 import pandas as pd
 import sciris as sc
 import numpy as np
+from matplotlib import pyplot as plt
+
+
+def poptest_model_run():
+    FW_PATH = _get_github_folder() + f"/framework/fw_popsizes.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/popsize_test_210926.xlsx"
+    YAML_PATH =  _get_github_folder()+f"/calibrations/"
+
+    F = at.ProjectFramework(FW_PATH)
+
+    P = at.Project(framework=F, databook=DB_PATH, do_run=False,
+                   sim_start=1980, sim_end=2071, sim_dt=1)
+
+    res = P.run_sim(parset="default", result_name="Uncalibrated")
+
+    cal = P.parsets[0].copy()
+    cal = P.calibrate(parset=cal, yaml=YAML_PATH + "YAML/calibrate_populations.yaml")
+
+    cal_res = P.run_sim(parset=cal, result_name="Calibrated Test")
+
+    born_os = {"BOS":["lros_0-14_M", "lros_15-64_M", "lros_65+_M", "lros_0-14_F", "lros_15-64_F", "lros_65+_F",
+                                                         "hros_0-14_M", "hros_15-64_M", "hros_65+_M","hros_0-14_F", "hros_15-64_F", "hros_65+_F"]}
+    atsi = {"ATSI":["atsi_0-14_M", "atsi_15-64_M", "atsi_65+_M", "atsi_0-14_F", "atsi_15-64_F", "atsi_65+_F"]}
+
+
+    a = at.PlotData([res,cal_res], outputs= "aus_pop", pops=atsi, pop_aggregation="sum",t_bins=1).series[0].vals
+    c = at.PlotData([res,cal_res], outputs= "aus_pop", pops=born_os, pop_aggregation="sum",t_bins=1).series[0].vals
+    b = at.PlotData([res,cal_res], outputs= "aus_pop", pops="total", pop_aggregation="sum",t_bins=1).series[0].vals
+
+    prop_atsi = a/b
+    prop_bos = c/b
+
+
+    plt.plot(np.linspace(1980,2071, 91), prop_bos)
+    plt.plot(np.linspace(1980,2071, 91), prop_atsi)
+    plt.ylim(0,0.50)
+
+
+    at.plot_series(d, data=P.data, axis="results")
 
 
 def hepaus_model_cal():
@@ -11,7 +50,7 @@ def hepaus_model_cal():
 
     # Set Paths
     FW_PATH = _get_github_folder()+f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH =  _get_github_folder()+f"/databook/claude_hbv_hepaus_db.xlsx"
+    DB_PATH =  _get_github_folder()+f"/databook/hbv_db_hepaus_220926.xlsx"
     YAML_PATH =  _get_github_folder()+f"/calibrations/"
 
     # Get Items
@@ -22,8 +61,8 @@ def hepaus_model_cal():
     # Run calibrations and save y_factors
     cal = P.parsets[0].copy()
 
-    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/calibrate_populations.yaml")
-    #cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/calibrate_epidemiology.yaml")
+    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hepaus_calibrate_populations.yaml")
+    #cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hepaus_calibrate_epidemiology.yaml")
     # cal = P.calibrate(parset = cal, yaml = _get_github_folder()+f"calibrations/YAML/calibrate_care.yaml") # only if needed
     cal.save_calibration(YAML_PATH+"Y-factors/hbv_hepaus_calibrations.xlsx")
 
