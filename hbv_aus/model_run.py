@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 def poptest_model_run():
     FW_PATH = _get_github_folder() + f"/framework/fw_popsizes.xlsx"
-    DB_PATH = _get_github_folder() + f"/databook/popsize_test_210926.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/popsize_test_20926.xlsx"
     YAML_PATH =  _get_github_folder()+f"/calibrations/"
 
     F = at.ProjectFramework(FW_PATH)
@@ -59,7 +59,7 @@ def hepaus_model_cal():
                             sim_start = 1980, sim_end = 2071, sim_dt=1)
 
     res = P.run_sim(parset="default", result_name="test")
-    d = at.PlotData(res, "imm_chb", t_bins=1)
+    d = at.PlotData(res, "hepb_prev", t_bins=1)
     at.plot_series(d, data = P.data, axis="results")
 
     # Run calibrations and save y_factors
@@ -68,6 +68,10 @@ def hepaus_model_cal():
     # Currently following same approach as SA HepB-BD analysis but using deaths instead of HCC incidence.
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hepaus_calibrate_populations.yaml")
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_prevalence_calibrate.yaml")
+    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_burden_calibrate.yaml")
+    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_prevalence_calibrate.yaml")
+    cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_burden_calibrate.yaml")
+
     cal.save_calibration(YAML_PATH+"Y-factors/hbv_hepaus_calibrations.xlsx")
 
     # cal = P.calibrate(parset = cal, yaml = _get_github_folder()+f"calibrations/YAML/calibrate_care.yaml") # only if needed

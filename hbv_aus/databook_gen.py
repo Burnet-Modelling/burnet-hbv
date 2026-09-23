@@ -1,9 +1,9 @@
 import atomica as at
 import numpy as np
 import pandas as pd
-
-from hbv_aus.claude_databook_fill import hepbd_cov_vals
 from hbv_aus.utils import _get_github_folder,_get_sharepoint_folder
+
+#from hbv_aus.claude_databook_fill import hepbd_cov_vals
 
 # Version 1.0 (basic population dynamics, no behaviour populations)
 def make_age_bands(max_age=84, band_width=5):
@@ -305,6 +305,12 @@ def gen_db_hbv_v2_1():
         else:
             for pop in pops:
                 D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="Fraction")
+
+    # Replace the immigration prevalence with an input
+    in_prev = calib_data[calib_data.par == "hepb_prev"]
+    for pop in pops:
+        D.tdve["imig_prev"].ts[pop] = at.TimeSeries(t=in_prev["year"], vals=in_prev[pop], units="N.A.")
+
 
     D.save(DB_PATH)
 
