@@ -41,6 +41,11 @@ FW_PATH = "framework/hbv_fw_v2.1_autosave.xlsx"
 DB_PATH = "databook/hbv_db_hepaus_220926.xlsx"
 CAL_PATH = "calibrations/Y-factors/hbv_hepaus_calibrations.xlsx"
 
+SIM_START = 1980
+FULL_SIM_END = 2071
+CALIBRATION_SIM_END = 2026  # a small buffer past the last data point (2024) - see docstring
+CALIBRATION_RELTOL = 1e-3
+
 CALIBRATION_STEPS = [
     ("foi_cal", "hepb_prev", (0, 0.05), 800),
     (["y_hcc", "y_cc", "init_cc", "init_dc"], "hep_dth", None, 800),
@@ -65,6 +70,7 @@ def calibrate(P, cal):
             adjustables=[(name, None, *bounds) for name in par_names],
             measurables=[(measurable, None, 1.0, "fractional")],
             max_time=max_time,
+            reltol=CALIBRATION_RELTOL,
         )
         print(f"  done in {time.time() - t0:.0f}s")
     return cal
@@ -94,19 +100,26 @@ def main():
     out_dir = os.path.join(_get_github_folder(), "outputs")
     os.makedirs(out_dir, exist_ok=True)
 
-    F = at.ProjectFramework(FW_PATH)
-    P = at.Project(framework=F, databook=DB_PATH, do_run=False, sim_start=1980, sim_end=2071, sim_dt=1)
-
-    cal = P.parsets[0].copy()
+    # Run the ASD search itself on a truncated project - every calibration data point is at
+    # or before 2024, so this is faster per-iteration with no fit cost (see module docstring).
+    # Separate ProjectFramework instances per Project, in case Project mutates its framework.
+    P_cal = at.Project(framework=at.ProjectFramework(FW_PATH), databook=DB_PATH, do_run=False, sim_start=SIM_START, sim_end=CALIBRATION_SIM_END, sim_dt=1)
+    cal = P_cal.parsets[0].copy()
     if os.path.exists(CAL_PATH):
         cal.load_calibration(CAL_PATH)
-
-    cal = calibrate(P, cal)
+    cal = calibrate(P_cal, cal)
     cal.save_calibration(CAL_PATH)
     print(f"Saved calibrated Y-factors to {CAL_PATH}")
 
+    # Y-factors are parset properties, independent of sim_end - reapply to the full-length
+    # project for the fit-check plots and saved results.
+    P = at.Project(framework=at.ProjectFramework(FW_PATH), databook=DB_PATH, do_run=False, sim_start=SIM_START, sim_end=FULL_SIM_END, sim_dt=1)
+    cal_full = P.parsets[0].copy()
+    cal_full.load_calibration(CAL_PATH)
+
     uncal_res = P.run_sim(parset="default", result_name="Uncalibrated")
-    cal_res = P.run_sim(parset=cal, result_name="Calibrated")
+    cal_res = P.run_sim(parset=cal_full, result_name="Calibrated")
+    cal = cal_full
 
     saved_plots = plot_fit(P, uncal_res, cal_res, out_dir)
     print(f"Saved calibration fit plots: {saved_plots}")
