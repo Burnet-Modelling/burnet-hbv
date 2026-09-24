@@ -7,7 +7,7 @@ Calibration:
     repeats: 3
 
     Burden from HBV:
-        maxtime: 800
+        maxtime: 300
         adjustables:
             (y_hcc):
                 lower_bound: 0

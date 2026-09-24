@@ -56,11 +56,9 @@ def hepaus_model_cal():
     # Get Items
     F = at.ProjectFramework(FW_PATH)
     P = at.Project(framework=F, databook = DB_PATH, do_run = False,
-                            sim_start = 1980, sim_end = 2071, sim_dt=1)
+                            sim_start = 1980, sim_end = 2071, sim_dt=0.25)
 
-    res = P.run_sim(parset="default", result_name="test")
-    d = at.PlotData(res, "hepb_prev", t_bins=1)
-    at.plot_series(d, data = P.data, axis="results")
+
 
     # Run calibrations and save y_factors
     cal = P.parsets[0].copy()
@@ -69,6 +67,12 @@ def hepaus_model_cal():
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hepaus_calibrate_populations.yaml")
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_prevalence_calibrate.yaml")
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_burden_calibrate.yaml")
+    cal.save_calibration(YAML_PATH+"Y-factors/hbv_hepaus_calibrations.xlsx")
+
+    res = P.run_sim(parset=cal, result_name="Calibration")
+    d = at.PlotData(res, "hep_dth", t_bins=1, pop_aggregation="sum")
+    at.plot_series(d, data=P.data)
+
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_prevalence_calibrate.yaml")
     cal = P.calibrate(parset = cal, yaml = YAML_PATH+"YAML/hbv_burden_calibrate.yaml")
 
