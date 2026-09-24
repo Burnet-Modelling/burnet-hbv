@@ -25,7 +25,7 @@ def plot_calibration_by_pop(par_name, ncols=4, pop_names=None, save_path=None):
     """
 
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/hbv_db_hepaus_220926.xlsx"
     CAL_PATH = _get_github_folder() + f"/calibrations/"
 
     F = at.ProjectFramework(FW_PATH)
@@ -76,8 +76,6 @@ def plot_calibration_by_pop(par_name, ncols=4, pop_names=None, save_path=None):
         fig.savefig(save_path)
 
     return fig
-
-plot_calibration_by_pop("ltc_cov", ncols=4, pop_names=None, save_path=None)
 
 
 def hepaus_outputs_excel():

@@ -394,7 +394,8 @@ for origin in ORIGINS:
 # ---------------------------------------------------------------------------
 # Validate and save
 # ---------------------------------------------------------------------------
-D.validate(F)
-print('VALIDATION PASSED')
-D.save(DB_OUT)
-print('Saved to', DB_OUT)
+if __name__ == "__main__":
+    D.validate(F)
+    print('VALIDATION PASSED')
+    D.save(DB_OUT)
+    print('Saved to', DB_OUT)

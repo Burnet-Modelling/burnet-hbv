@@ -2,35 +2,24 @@
 import pandas as pd
 import openpyxl
 import os
-import socket
-from platform import system
+
+# OneDrive syncs each SharePoint document library to
+# C:/Users/<username>/Burnet Institute/<Library Name>/... for every user, so folders under
+# it can be located generically from the current user's home directory instead of being
+# hardcoded per-machine.
+def _get_burnet_onedrive_folder(*parts):
+    home = os.path.expanduser("~")
+    return os.path.join(home, "Burnet Institute", *parts)
 
 # Sharepoint folder, used for storing data and saving outputs
 def _get_sharepoint_folder():
-    """ Adapted from HCV code, function written by @kelly.maynard"""
-
-    user = socket.gethostname()
-    platform = system()
-
-    if user in ['ChrisS-OCT25']:
-        folder = r'C:\Users\chris.seaman\Burnet Institute\WG-Modelling-Hepatitis B - Documents\Applications\HepAus Submission Modelling'
-    else:
-        raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
-
+    folder = _get_burnet_onedrive_folder("WG-Modelling-Hepatitis B - Documents", "Applications", "HepAus Submission Modelling")
     return os.path.join(os.path.abspath(folder), '')
 
 # GitHub repo, used for accessing frameworks, saving calibrations and databooks.
 def _get_github_folder():
-    """ Adapted from HCV code, function written by @kelly.maynard"""
-
-    user = socket.gethostname()
-    platform = system()
-
-    if user in ['ChrisS-OCT25']:
-        folder = r'C:\Users\chris.seaman\Desktop\GitRepos\burnet-hbv'
-    else:
-        raise Exception(f'Error: unknown user "{user}", please add user information for future convenience!')
-
+    """ Root of this repo checkout, derived from this file's location (hbv_aus/utils.py is one level below the repo root). """
+    folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(os.path.abspath(folder), '')
 
 def extract_hbv_effects_by_measure(

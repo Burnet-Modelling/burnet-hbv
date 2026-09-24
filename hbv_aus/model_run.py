@@ -1,8 +1,9 @@
 import atomica as at
-from hbv_aus.utils import _get_github_folder,extract_hbv_effects_by_measure
+from hbv_aus.utils import _get_github_folder,_get_burnet_onedrive_folder,extract_hbv_effects_by_measure
 import pandas as pd
 import sciris as sc
 import numpy as np
+import os
 from matplotlib import pyplot as plt
 
 
@@ -58,10 +59,6 @@ def hepaus_model_cal():
     P = at.Project(framework=F, databook = DB_PATH, do_run = False,
                             sim_start = 1980, sim_end = 2071, sim_dt=1)
 
-    res = P.run_sim(parset="default", result_name="test")
-    d = at.PlotData(res, "hepb_prev", t_bins=1)
-    at.plot_series(d, data = P.data, axis="results")
-
     # Run calibrations and save y_factors
     cal = P.parsets[0].copy()
 
@@ -76,6 +73,8 @@ def hepaus_model_cal():
 
     # cal = P.calibrate(parset = cal, yaml = _get_github_folder()+f"calibrations/YAML/calibrate_care.yaml") # only if needed
 
+    return {"Project": P, "Calibrated Parset": cal}
+
 
 
 def run_hepaus_uncalibrated():
@@ -83,7 +82,7 @@ def run_hepaus_uncalibrated():
     """ For rapid testing of changes to Framework etc, can run an uncalibrated model and
     returns a dictionary of project & results set for analysis"""
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/hbv_db_hepaus_220926.xlsx"
 
     F = at.ProjectFramework(FW_PATH)
     P = at.Project(framework=F, databook=DB_PATH, do_run=False,
@@ -98,7 +97,7 @@ def export_hepaus_baselines():
 
     """ Export data needed for the HepAus spreadsheet used for running scenarios in a .xlsx sheet"""
     FW_PATH = _get_github_folder()+f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH =  _get_github_folder()+f"/databook/claude_hbv_hepaus_db.xlsx"
+    DB_PATH =  _get_github_folder()+f"/databook/hbv_db_hepaus_220926.xlsx"
     CAL_PATH =  _get_github_folder()+f"/calibrations/"
 
     # Run the model and extract: testing, treatment, and linkage to care rates (for now)
@@ -132,7 +131,7 @@ def export_hepaus_baselines():
 
 
 
-def run_hepaus_scenarios(local_ref = "C:/Users/chris.seaman/Burnet Institute/WG-Modelling - Documents/Viral hep modelling/Strategy implementation/"):
+def run_hepaus_scenarios(local_ref = None):
     # TODO: Incorporate uncertainty analysis
 
     """
@@ -140,8 +139,11 @@ def run_hepaus_scenarios(local_ref = "C:/Users/chris.seaman/Burnet Institute/WG-
     :return:
     """
 
+    if local_ref is None:
+        local_ref = _get_burnet_onedrive_folder("WG-Modelling - Documents", "Viral hep modelling", "Strategy implementation") + os.sep
+
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH = _get_github_folder() + f"/databook/claude_hbv_hepaus_db.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/hbv_db_hepaus_220926.xlsx"
     CAL_PATH = _get_github_folder() + f"/calibrations/"
 
     # Import scenario scale-up values
