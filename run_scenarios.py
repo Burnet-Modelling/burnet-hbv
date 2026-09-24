@@ -155,7 +155,7 @@ def _incidence_vals(res, pop_names):
     horiz_by_year = {}
     for pop in res.model.pops:
         for link in pop.links:
-            if link.parameter.name != "horiz":
+            if link.parameter.name != "horiz_chb":
                 continue
             for ti, y in enumerate(link.t):
                 horiz_by_year[y] = horiz_by_year.get(y, 0.0) + link.vals[ti]

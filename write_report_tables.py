@@ -21,6 +21,7 @@ import os
 import numpy as np
 import sciris as sc
 import atomica as at
+from isort.wrap_modes import vertical_prefix_from_module_import
 
 from hbv_aus.utils import _get_github_folder
 from run_scenarios import _series_vals, _cascade_vals, SCENARIOS
@@ -59,7 +60,7 @@ def _new_infections(res, pop_names, years):
     """Horizontal (community) + mother-to-child transmission new infections, summed over
     `years`. See module docstring - sanity-check against run_scenarios.py's incidence
     panel before use."""
-    horiz = _flow_sum(res, "horiz", years)
+    horiz = _flow_sum(res, "horiz_chb", years)
     b_chb_total = 0.0
     for p in pop_names:
         s = at.PlotData(res, outputs="b_chb", pops=p, t_bins=1).series[0]
@@ -112,17 +113,31 @@ def build_tables(results):
     ]
 
     # ---- Table 4: costs and economic outcomes ---------------------------------------------
+    dir_c_2036, test_c_2036, treat_c_2036, dism_c_2036, prem_c_2036, qaly_2036 = {},{},{},{},{},{}
+    for _, lbl in SCENARIOS:
+        t_dir, v_dir = _series_vals(res[lbl], pop_names, None, "direct_costs")
+        dir_c_2036[lbl] = sum(v_dir[list(t_dir).index(y + 0.5)] for y in years_range)
+        t_test, v_test = _series_vals(res[lbl], pop_names, None, "diag_cost")
+        test_c_2036[lbl] = sum(v_test[list(t_test).index(y + 0.5)] for y in years_range)
+        t_treat, v_treat = _series_vals(res[lbl], pop_names, None, "treat_cost")
+        treat_c_2036[lbl] = sum(v_treat[list(t_treat).index(y + 0.5)] for y in years_range)
+        t_dism, v_dism = _series_vals(res[lbl], pop_names, None, "dm_cost")
+        dism_c_2036[lbl] = sum(v_dism[list(t_dism).index(y + 0.5)] for y in years_range)
+        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "mort_cost")
+        prem_c_2036[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
+        t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
+        qaly_2036[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)
     table4 = [
         (f"Costs (million A$), {YEAR_START}-{YEAR_END}", None, None, None, "header"),
-        ("Total direct costs", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
-        ("HBV testing", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
-        ("HBV treatment", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
-        ("HBV disease management", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Total direct costs", dir_c_2036[CSQ], dir_c_2036[ACT], d(dir_c_2036), "count"),
+        ("HBV testing", test_c_2036[CSQ], test_c_2036[ACT], d(test_c_2036), "count"),
+        ("HBV treatment", treat_c_2036[CSQ], treat_c_2036[ACT], d(treat_c_2036), "count"),
+        ("HBV disease management", dism_c_2036[CSQ], dism_c_2036[ACT], d(dism_c_2036), "count"),
         ("Societal costs", None, None, None, "header"),
         ("Absenteeism + presenteeism", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
-        ("Premature deaths", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Premature deaths", prem_c_2036[CSQ], prem_c_2036[ACT], d(prem_c_2036), "count"),
         ("Cost-effectiveness", None, None, None, "header"),
-        ("Total QALYs", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Total QALYs", qaly_2036[CSQ], qaly_2036[ACT], d(qaly_2036), "count"),
         (f"Direct costs per QALY gained at {YEAR_END}", "-", COST_NOTE, None, "text"),
         ("Net economic benefit", NA, NA, NA, "text"),
         (f"At {YEAR_END} (millions A$)", "-", NA, None, "text"),

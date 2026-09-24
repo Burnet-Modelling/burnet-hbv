@@ -44,7 +44,7 @@ def gen_db_hbv_v2_1():
     """
     # Import Framework to produce databook
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_220926.xlsx"
+    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_240926.xlsx"
     DATA_PATH  = _get_github_folder() + f"input data/"
 
     F = at.ProjectFramework(FW_PATH)
@@ -311,6 +311,42 @@ def gen_db_hbv_v2_1():
     for pop in pops:
         D.tdve["imig_prev"].ts[pop] = at.TimeSeries(t=in_prev["year"], vals=in_prev[pop], units="N.A.")
 
+    # Economic Parameters
+
+    # Discounting Rates (assume 5% for both)
+    d_rate = pd.DataFrame(columns = ["year", "disc"])
+    d_rate.year = np.arange(1980, 2071,1)
+
+    for idx, year in enumerate(d_rate.year):
+        if year <=2027:
+            d_rate.loc[idx, "disc"] = 1
+        else:
+            d_rate.loc[idx, "disc"] = (1-0.05)**(year-2027)
+
+    for pop in pops:
+        D.tdve["disc_rate_cost"].ts[pop] = at.TimeSeries(t=d_rate.year, vals=d_rate.disc, units = "N.A.")
+        D.tdve["disc_rate_qaly"].ts[pop] = at.TimeSeries(t=d_rate.year, vals=d_rate.disc, units = "N.A.")
+
+    # Costs and QALY weights
+    costs = pd.read_excel(DATA_PATH+f"economics_in.xlsx", sheet_name="costs")
+    cost_pars = list(pd.unique(costs.par))
+    qalys = pd.read_excel(DATA_PATH+f"economics_in.xlsx", sheet_name="qalys")
+    qalys_pars = list(pd.unique(qalys.par))
+
+    for par in cost_pars:
+        temp_cost = costs[costs.par==par]
+        temp_cost = temp_cost[temp_cost.est=="p.e"]
+        for pop in pops:
+            D.tdve[par].ts[pop].assumption = temp_cost["val"]
+
+    for par in qalys_pars:
+        temp_qaly = qalys[qalys.par==par]
+        temp_qaly = temp_qaly[temp_qaly.est=="p.e"]
+        for pop in pops:
+            D.tdve[par].ts[pop].assumption = temp_qaly["val"]
+
+
+
 
     D.save(DB_PATH)
 
@@ -318,7 +354,7 @@ def gen_db_hbv_v2_1():
 
 
 
-    #D.validate(F)
+
 
 
 

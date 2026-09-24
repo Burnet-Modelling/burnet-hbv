@@ -97,7 +97,7 @@ def export_hepaus_baselines():
 
     """ Export data needed for the HepAus spreadsheet used for running scenarios in a .xlsx sheet"""
     FW_PATH = _get_github_folder()+f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH =  _get_github_folder()+f"/databook/hbv_db_hepaus_220926.xlsx"
+    DB_PATH =  _get_github_folder()+f"/databook/hbv_db_hepaus_240926.xlsx"
     CAL_PATH =  _get_github_folder()+f"/calibrations/"
 
     # Run the model and extract: testing, treatment, and linkage to care rates (for now)
@@ -143,7 +143,7 @@ def run_hepaus_scenarios(local_ref = None):
         local_ref = _get_burnet_onedrive_folder("WG-Modelling - Documents", "Viral hep modelling", "Strategy implementation") + os.sep
 
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH = _get_github_folder() + f"/databook/hbv_db_hepaus_220926.xlsx"
+    DB_PATH = _get_github_folder() + f"/databook/hbv_db_hepaus_240926.xlsx"
     CAL_PATH = _get_github_folder() + f"/calibrations/"
 
     # Import scenario scale-up values

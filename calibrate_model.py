@@ -38,7 +38,7 @@ from matplotlib import pyplot as plt
 from hbv_aus.utils import _get_github_folder
 
 FW_PATH = "framework/hbv_fw_v2.1_autosave.xlsx"
-DB_PATH = "databook/hbv_db_hepaus_220926.xlsx"
+DB_PATH = "databook/hbv_db_hepaus_240926.xlsx"
 CAL_PATH = "calibrations/Y-factors/hbv_hepaus_calibrations.xlsx"
 
 SIM_START = 1980
