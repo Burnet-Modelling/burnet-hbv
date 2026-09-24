@@ -7,7 +7,7 @@ Calibration:
     repeats: 3
     Hepatitis B transmission and prevalence calibration:
           Match HBsAg seroprevalence:
-              maxtime: 800
+              maxtime: 300
 
               adjustables:
                   (foi_cal):
@@ -21,7 +21,7 @@ Calibration:
                       cal_end: 2024
 
           Match HBeAg seroprevalence:
-              maxtime: 800
+              maxtime: 300
 
               adjustables:
                   (eh_si):
