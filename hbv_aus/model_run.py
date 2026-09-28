@@ -122,7 +122,7 @@ def export_hepaus_baselines():
             store.val = at.PlotData(res, outputs=par, t_bins=1, pops=pop).series[0].vals
 
             for i in range(len(store)):
-                if store.year[i] == 2026.5:
+                if store.year[i] == 2026.5: #2024 is the final year with data, it will zero out by design in many pops!
                     export_pars.at[par, pop] = store.val[i]
 
     # Save to excel

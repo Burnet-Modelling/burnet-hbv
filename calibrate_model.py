@@ -47,27 +47,33 @@ CALIBRATION_SIM_END = 2026  # a small buffer past the last data point (2024) - s
 CALIBRATION_RELTOL = 1e-3
 
 CALIBRATION_STEPS = [
-    ("foi_cal", "hepb_prev", (0, 0.05), 800),
-    (["y_hcc", "y_cc", "init_cc", "init_dc"], "hep_dth", None, 800),
+    #("foi_cal", "hepb_prev", (0, 0.05), 800),
+    #("imig_prev", "hepb_prev", None, 800),
+    #("eh_si", "epos_total", None, 800),
+    #("foi_cal", "hepb_prev", (0, 0.05), 800),
+    (["y_hcc", "y_cc"], "hep_dth", (0.01, 10), 800, "all"),
 ]
 
 # Characteristics to sanity-check pre- vs post-calibration fit against data
 FIT_CHECKS = [
     ("total_pop", "Total Population"),
     ("hepb_prev", "HBsAg Prevalence"),
+    ("epos_total", "HBeAg Prevalence"),
     ("hep_dth", "HBV-Attributable Deaths"),
 ]
 
 
 def calibrate(P, cal):
-    for par_names, measurable, bounds, max_time in CALIBRATION_STEPS:
+    for step in CALIBRATION_STEPS:
+        par_names, measurable, bounds, max_time = step[:4]
+        pop_name = step[4] if len(step) > 4 else None  # None = per-pop y_factors; "all" = shared meta_y_factor
         par_names = par_names if isinstance(par_names, list) else [par_names]
         bounds = bounds or (0, 5)
-        print(f"Calibrating {par_names} against {measurable} (maxtime={max_time}s)...")
+        print(f"Calibrating {par_names} (pop={pop_name!r}) against {measurable} (maxtime={max_time}s)...")
         t0 = time.time()
         cal = P.calibrate(
             parset=cal,
-            adjustables=[(name, None, *bounds) for name in par_names],
+            adjustables=[(name, pop_name, *bounds) for name in par_names],
             measurables=[(measurable, None, 1.0, "fractional")],
             max_time=max_time,
             reltol=CALIBRATION_RELTOL,
