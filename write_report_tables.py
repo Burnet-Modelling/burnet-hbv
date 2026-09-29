@@ -123,7 +123,7 @@ def build_tables(results):
         treat_c_2036[lbl] = sum(v_treat[list(t_treat).index(y + 0.5)] for y in years_range)
         t_dism, v_dism = _series_vals(res[lbl], pop_names, None, "dm_cost")
         dism_c_2036[lbl] = sum(v_dism[list(t_dism).index(y + 0.5)] for y in years_range)
-        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "mort_cost")
+        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "prod_loss")
         prem_c_2036[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
         t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
         qaly_2036[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)

@@ -1,0 +1,225 @@
+<title>HepAus vs Australian HBV Models</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf9f7; --surface:#ffffff; --border:#e2ddd4; --fg:#241f18; --fg-muted:#6b6255;
+  --accent:#8a4a2f; --accent-soft:#f3e4da; --accent-fg:#ffffff;
+  --font-display:'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-body:'Source Sans 3', -apple-system, Segoe UI, sans-serif;
+  --font-mono:'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1815; --surface:#242019; --border:#3a3329; --fg:#f1ece2; --fg-muted:#b3a998;
+    --accent:#e08a5f; --accent-soft:#3a2a20; --accent-fg:#1b1815; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1815; --surface:#242019; --border:#3a3329; --fg:#f1ece2; --fg-muted:#b3a998;
+  --accent:#e08a5f; --accent-soft:#3a2a20; --accent-fg:#1b1815; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body);
+  margin:0; padding-inline:16px; line-height:1.6; font-size:16px;
+}
+.page{max-width:880px; margin:0 auto; padding-block:48px 80px;}
+.eyebrow{
+  font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.12em;
+  font-size:12.5px; color:var(--accent); margin:0 0 10px;
+}
+h1{
+  font-family:var(--font-display); font-size:clamp(28px,5vw,42px); line-height:1.15;
+  margin:0 0 12px; text-wrap:balance; font-weight:600;
+}
+.subtitle{color:var(--fg-muted); font-size:17px; max-width:62ch; margin:0 0 36px;}
+h2{
+  font-family:var(--font-display); font-size:23px; font-weight:600; margin:48px 0 14px;
+  padding-bottom:10px; border-bottom:1px solid var(--border);
+}
+h3{font-family:var(--font-display); font-size:18px; font-weight:600; margin:28px 0 10px;}
+p{margin:0 0 14px; max-width:70ch;}
+.lede{font-size:17px;}
+ul,ol{margin:0 0 14px; padding-left:22px;}
+li{margin-bottom:6px; max-width:66ch;}
+strong{font-weight:600;}
+.model-tag{
+  display:inline-block; font-family:var(--font-mono); font-size:12px; font-weight:600;
+  padding:2px 8px; border-radius:4px; background:var(--accent-soft); color:var(--accent);
+  letter-spacing:0.02em;
+}
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:20px 22px; margin:18px 0;
+}
+.model-grid{display:grid; grid-template-columns:1fr; gap:14px; margin:20px 0;}
+@media (min-width:640px){.model-grid{grid-template-columns:1fr 1fr;}}
+.model-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px;
+  min-width:0;
+}
+.model-card h4{
+  font-family:var(--font-display); font-size:16px; margin:0 0 4px; font-weight:600;
+}
+.model-card .cite{color:var(--fg-muted); font-size:13px; margin:0 0 10px; font-style:italic;}
+.model-card p{font-size:14.5px; margin:0;}
+.table-wrap{overflow-x:auto; margin:20px 0; border:1px solid var(--border); border-radius:10px;}
+table{border-collapse:collapse; width:100%; min-width:640px; font-size:14.5px;}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:top;}
+th{
+  font-family:var(--font-mono); text-transform:uppercase; font-size:11.5px; letter-spacing:0.06em;
+  color:var(--fg-muted); background:var(--accent-soft); white-space:nowrap;
+}
+tr:last-child td{border-bottom:none;}
+td:first-child, th:first-child{font-weight:600; white-space:nowrap;}
+.hepaus-col{background:color-mix(in srgb, var(--accent-soft) 55%, transparent);}
+.source-list{font-size:14px; color:var(--fg-muted);}
+.source-list li{margin-bottom:8px;}
+.source-list a{color:var(--accent);}
+.callout{
+  background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:14px 18px; margin:18px 0; font-size:14.5px;
+}
+.callout strong{color:var(--accent);}
+footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--border); color:var(--fg-muted); font-size:13px;}
+</style>
+
+<div class="page">
+  <p class="eyebrow">Model comparison &middot; Burnet Institute</p>
+  <h1>HepAus against published Australian hepatitis&nbsp;B models</h1>
+  <p class="subtitle lede">How the Atomica-based HepAus model differs structurally from the three main published dynamic-population models of chronic hepatitis&nbsp;B (CHB) burden in Australia.</p>
+
+  <div class="callout">
+    <strong>Headline difference:</strong> HepAus is a genuine person-to-person <em>transmission</em> model (force-of-infection driven, with feedback between prevalence and future incidence). All three comparison models are <em>disease-progression / cascade</em> models — they project prevalence forward from assumed incidence and migration inputs, without a transmission mechanism that can respond to changes in exposure.
+  </div>
+
+  <h2>Models compared</h2>
+  <div class="model-grid">
+    <div class="model-card">
+      <h4>HepAus <span class="model-tag">this model</span></h4>
+      <p class="cite">Burnet Institute, Atomica framework</p>
+      <p>Dynamic transmission model, 24 populations (4 origin groups &times; 3 age bands &times; 2 sexes), calibrated via Y-factor optimisation to HBsAg/HBeAg prevalence and mortality data.</p>
+    </div>
+    <div class="model-card">
+      <h4>McCulloch et al. 2020</h4>
+      <p class="cite">Hepatology 71:1170&ndash;1181</p>
+      <p>National CHB burden and elimination-progress model. Disease-progression only, 18 age bands, stratified by country of birth, dynamic migration.</p>
+    </div>
+    <div class="model-card">
+      <h4>McCulloch et al. 2023</h4>
+      <p class="cite">Aust NZ J Public Health 47(1)</p>
+      <p>Jurisdictional (state/territory) extension of the 2020 model, same core structure, used to compare cascade-of-care gaps across jurisdictions.</p>
+    </div>
+    <div class="model-card">
+      <h4>Xiao / Howell / van Gemert et al. 2020</h4>
+      <p class="cite">J Viral Hepatitis 27:526&ndash;536</p>
+      <p>Markov cost-effectiveness model of the care cascade, used to estimate DALYs and ICERs of scaling up diagnosis, linkage, and treatment.</p>
+    </div>
+  </div>
+
+  <h2>Structural comparison</h2>
+  <div class="table-wrap">
+    <table>
+      <tr>
+        <th>Dimension</th>
+        <th class="hepaus-col">HepAus</th>
+        <th>McCulloch 2020 / 2023</th>
+        <th>Xiao et al. 2020</th>
+      </tr>
+      <tr>
+        <td>Model type</td>
+        <td class="hepaus-col">Dynamic transmission (compartmental, force-of-infection)</td>
+        <td>Disease-progression / natural-history, no transmission</td>
+        <td>Markov cohort, decision-analytic</td>
+      </tr>
+      <tr>
+        <td>Person-to-person transmission</td>
+        <td class="hepaus-col">Yes &mdash; horizontal transmission (<code>foi_cal</code>, interaction matrices) and MTCT</td>
+        <td>No &mdash; incidence assumed via migrant prevalence inflow only</td>
+        <td>No &mdash; static cascade cohort</td>
+      </tr>
+      <tr>
+        <td>Indigenous stratification</td>
+        <td class="hepaus-col">Explicit stratum (ATSI) with its own demography, natural history and cascade</td>
+        <td>Not modelled &mdash; explicitly flagged by the authors as a gap</td>
+        <td>Not modelled</td>
+      </tr>
+      <tr>
+        <td>Sex stratification</td>
+        <td class="hepaus-col">Yes</td>
+        <td>No</td>
+        <td>Not reported</td>
+      </tr>
+      <tr>
+        <td>Age structure</td>
+        <td class="hepaus-col">3 bands (0&ndash;14, 15&ndash;64, 65+)</td>
+        <td>18 bands (5-year, 0&ndash;84 plus 85+)</td>
+        <td>Aggregate cohort</td>
+      </tr>
+      <tr>
+        <td>Origin / migration groups</td>
+        <td class="hepaus-col">4 groups (ATSI, Australian-born, low-risk overseas-born, high-risk overseas-born)</td>
+        <td>Country of birth, with China/Vietnam/Philippines/Taiwan modelled separately</td>
+        <td>Not stratified by origin</td>
+      </tr>
+      <tr>
+        <td>Migration dynamics</td>
+        <td class="hepaus-col">Net migration rate drives population size and imports prevalent infection</td>
+        <td>ABS net overseas migration 1951&ndash;2050, by age and country of birth</td>
+        <td>Not modelled</td>
+      </tr>
+      <tr>
+        <td>MTCT detail</td>
+        <td class="hepaus-col">Explicit: maternal HBeAg/viral-load status, antenatal screening rate, birth-dose and prophylaxis effectiveness, diagnosed vs undiagnosed mothers</td>
+        <td>Aggregate incidence assumption, not mechanistically split by maternal diagnosis</td>
+        <td>Not modelled</td>
+      </tr>
+      <tr>
+        <td>Cascade-of-care mechanism</td>
+        <td class="hepaus-col">Continuously calibrated, time-varying rates chasing empirical coverage targets each year</td>
+        <td>Discrete treatment-uptake scenarios (baseline / intermediate / optimistic)</td>
+        <td>Fixed transition probabilities per Markov cycle, scaled to target scale-up scenarios</td>
+      </tr>
+      <tr>
+        <td>Calibration method</td>
+        <td class="hepaus-col">Y-factor scale-parameter search (ASD optimisation) against HBsAg/HBeAg prevalence and mortality</td>
+        <td>Parameters from literature review; Latin hypercube uncertainty sampling (1,000 runs), no formal optimisation-based fit</td>
+        <td>Parameters from literature/PBS/Medicare data, deterministic base case with sensitivity analysis</td>
+      </tr>
+      <tr>
+        <td>Primary purpose</td>
+        <td class="hepaus-col">Explore transmission-sensitive scenarios (e.g. testing, vaccination, cascade interventions) with feedback on future incidence</td>
+        <td>Track national/jurisdictional progress toward WHO and Australian 2022/2030 elimination targets</td>
+        <td>Estimate cost-effectiveness (DALYs, ICER) of scaling up the care cascade</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>Why the transmission mechanism matters</h2>
+  <p>Because McCulloch 2020/2023 and Xiao 2020 do not model transmission, their future prevalence trajectories are driven almost entirely by <strong>assumed</strong> incidence: migration of already-infected people, and a fixed background rate of new infection. They cannot represent an intervention that reduces exposure &mdash; e.g. how reduced prevalence among 15&ndash;64-year-olds today lowers horizontal transmission risk to children a decade later. HepAus's force-of-infection structure (<code>foi_cal</code>, <code>horiz_chb</code>, interaction matrices) makes this feedback explicit, at the cost of needing a genuine calibration procedure (rather than literature-derived point estimates) to pin down transmission intensity per population.</p>
+
+  <h2>Why the Indigenous stratum matters</h2>
+  <p>McCulloch et al. explicitly state that "specific modelling of CHB in Aboriginal and Torres Strait Islander Australians" was not included in their primary analysis, citing insufficient age-specific prevalence data, and describe a dedicated Indigenous model as ongoing future work. HepAus's four-origin-group structure treats ATSI as a first-class population from the outset, with its own demography, natural history calibration and cascade-of-care parameters &mdash; directly addressing the gap those authors flag, though at the cost of needing Indigenous-specific input data of a quality the national model could not assume.</p>
+
+  <h2>Where the comparison models are more detailed</h2>
+  <ul>
+    <li><strong>Age resolution:</strong> McCulloch's 18 five-year age bands resolve age-specific cirrhosis/HCC risk far more finely than HepAus's three broad bands.</li>
+    <li><strong>Country-of-birth granularity:</strong> McCulloch separately models China, Vietnam, Philippines and Taiwan (&gt;45% of migrants with CHB), whereas HepAus collapses all overseas-born people into two risk tiers (low/high).</li>
+    <li><strong>Uncertainty quantification:</strong> McCulloch's Latin hypercube sampling across 1,000 runs produces formal plausible ranges around every output; HepAus's current calibration produces point estimates from a single optimised parameter set.</li>
+  </ul>
+
+  <h2>Summary</h2>
+  <p>The three published models sit in the same family as each other &mdash; disease-progression or decision-analytic cascade models, calibrated from literature and administrative data (NNDSS notifications, PBS dispensing, Medicare), used to track elimination-target progress or cost-effectiveness. HepAus is structurally different: it is the only one of the four with an explicit transmission mechanism and an explicit Aboriginal and Torres Strait Islander stratum, trading finer age and country-of-birth resolution for those two capabilities.</p>
+
+  <footer>
+    <p><strong>Sources</strong></p>
+    <ul class="source-list">
+      <li>McCulloch K, Romero N, MacLachlan J, Allard N, Cowie B. Modeling Progress Toward Elimination of Hepatitis B in Australia. <em>Hepatology</em> 2020;71:1170&ndash;1181. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7187332/" target="_blank" rel="noopener">PMC7187332</a></li>
+      <li>McCulloch K, Romero N, Allard N, MacLachlan JH, Cowie BC. Modelling jurisdictional disparities in the cascade of care for chronic hepatitis B in Australia: impact of treatment uptake on mortality. <em>Aust N Z J Public Health</em> 2023;47(1). <a href="https://pubmed.ncbi.nlm.nih.gov/36638581/" target="_blank" rel="noopener">PubMed 36638581</a></li>
+      <li>Xiao Y, Howell J, van Gemert C, et al. Enhancing the hepatitis B care cascade in Australia: a cost-effectiveness model. <em>J Viral Hepat</em> 2020;27:526&ndash;536. <a href="https://pubmed.ncbi.nlm.nih.gov/31856377/" target="_blank" rel="noopener">PubMed 31856377</a></li>
+    </ul>
+    <p style="margin-top:14px;">Prepared from the HepAus framework, databook and calibration as of the current session, and publicly available abstracts/full text of the cited papers.</p>
+  </footer>
+</div>

@@ -206,6 +206,12 @@ def run_hepaus_scenarios(local_ref = None):
         s1_parset.pars["ltc_rate"].skip_function[pop] = (2026.5, np.inf)
         s1_parset.pars["treat_rate"].skip_function[pop] = (2026.5, np.inf)
 
+    # Add 100% ANC screening rate
+    preg_pops = ["atsi_15-64_F", "ausb_15-64_F", "hros_15-64_F", "lros_15-64_F"]
+
+    for pop in preg_pops:
+        s1_parset.pars["anc_scr"].ts[pop].insert([2026.5,2027.5], [0.97,1])
+
     res_s1 = P.run_sim(s1_parset, result_name = "Intervention S1")
 
     # Temporary (while no uncertainty) - just return P and res items for data extraction
