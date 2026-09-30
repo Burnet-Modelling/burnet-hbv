@@ -26,9 +26,10 @@ from isort.wrap_modes import vertical_prefix_from_module_import
 from hbv_aus.utils import _get_github_folder
 from run_scenarios import _series_vals, _cascade_vals, SCENARIOS
 
-YEAR_START, YEAR_END = 2027, 2036
-TARGET_YEAR = 2030
 BASELINE_YEAR = 2015
+YEAR_START = 2027
+YEAR_END = 2036
+TARGET_YEAR = 2030
 
 CSQ, ACT = "Status Quo", "Action Scenario"
 NA = "N/A"
@@ -78,42 +79,224 @@ def _new_infections_at_year(res, pop_names, year):
 def build_tables(results):
     project, _, _ = results[SCENARIOS[0][0]]
     pop_names = list(project.data.pops.keys())
-    years_range = list(range(YEAR_START, YEAR_END + 1))
 
     res = {label: results[key][2] for key, label in SCENARIOS}
 
-    # ---- Table 3: service delivery + epidemiology, 2027-2036 ----------------------------
+    # ---- Table 3a: Service delivery and epi, 2027-2030 -------------------------------
+    years_range = list(range(YEAR_START, 2030 + 1))
     treatments = {lbl: _flow_sum(res[lbl], "treat_rate", years_range) for _, lbl in SCENARIOS}
     new_infections = {lbl: _new_infections(res[lbl], pop_names, years_range) for _, lbl in SCENARIOS}
-    deaths = {}
-    hepb_pop_2036 = {}
-    prev_2036 = {}
+    deaths_c_2030 = {}
+    hcc_c_2030 = {}
+    hepb_pop_2030 = {}
+    prev_2030 = {}
+    death_i_2030 = {}
+    hcc_i_2030 = {}
     for _, lbl in SCENARIOS:
         t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
-        deaths[lbl] = sum(v_dth[list(t_dth).index(y + 0.5)] for y in years_range)
+        deaths_c_2030[lbl] = sum(v_dth[list(t_dth).index(y + 0.5)] for y in years_range)
+        t_hcc, v_hcc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_c_2030[lbl] = sum(v_hcc[list(t_hcc).index(y + 0.5)] for y in years_range)
         t_hepb, v_hepb = _series_vals(res[lbl], pop_names, None, "hepb_pop")
-        hepb_pop_2036[lbl] = _value_at_year(t_hepb, v_hepb, YEAR_END)
+        hepb_pop_2030[lbl] = _value_at_year(t_hepb, v_hepb, 2030)
         t_tot, v_tot = _series_vals(res[lbl], pop_names, None, "total_pop")
-        prev_2036[lbl] = hepb_pop_2036[lbl] / _value_at_year(t_tot, v_tot, YEAR_END)
+        prev_2030[lbl] = hepb_pop_2030[lbl] / _value_at_year(t_tot, v_tot, 2030)
+        t_hc, v_hc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_i_2030[lbl] = _value_at_year(t_hc, v_hc, 2030)
+        t_dt, v_dt = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        death_i_2030[lbl] = _value_at_year(t_dt, v_dt, 2030)
 
     def d(dct):
         return dct[ACT] - dct[CSQ]
 
-    table3 = [
+    table3a = [
         ("Service delivery", None, None, None, "header"),
         (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
         (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
         ("Epidemiology", None, None, None, "header"),
-        (f"People with hepatitis B in {YEAR_END}", hepb_pop_2036[CSQ], hepb_pop_2036[ACT], d(hepb_pop_2036), "count"),
-        (f"Number of new hepatitis B infections, {YEAR_START}-{YEAR_END} (see note below table)",
+        (f"People with hepatitis B in {2030}", hepb_pop_2030[CSQ], hepb_pop_2030[ACT], d(hepb_pop_2030), "count"),
+        (f"Number of new hepatitis B infections, {YEAR_START}-{2030} (see note below table)",
          new_infections[CSQ], new_infections[ACT], d(new_infections), "count"),
-        (f"Number of hepatitis B-related deaths, {YEAR_START}-{YEAR_END}", deaths[CSQ], deaths[ACT], d(deaths), "count"),
-        (f"Hepatitis B prevalence among the whole population in {YEAR_END} (%)",
-         prev_2036[CSQ], prev_2036[ACT], d(prev_2036), "pct"),
+        (f"Number of hepatitis B-related deaths, {YEAR_START}-{2030}", deaths_c_2030[CSQ], deaths_c_2030[ACT], d(deaths_c_2030), "count"),
+        (f"Number of hepatitis B-related liver cancers, {YEAR_START}-{2030}", hcc_c_2030[CSQ], hcc_c_2030[ACT], d(hcc_c_2030),
+         "count"),
+        (f"Hepatitis B prevalence among the whole population in {2030} (%)",
+         prev_2030[CSQ], prev_2030[ACT], d(prev_2030), "pct"),
+        (f"HCC incidence in single year of {2030} ",
+         hcc_i_2030[CSQ], hcc_i_2030[ACT], d(hcc_i_2030), "count"),
+        (f"HBV deaths in single year of {2030} ",
+         death_i_2030[CSQ], death_i_2030[ACT], d(death_i_2030), "count"),
     ]
 
-    # ---- Table 4: costs and economic outcomes ---------------------------------------------
-    dir_c_2036, test_c_2036, treat_c_2036, dism_c_2036, prem_c_2036, qaly_2036 = {},{},{},{},{},{}
+    # ---- Table 3b: Service delivery and epi, 2027-2036 -------------------------------
+    years_range = list(range(YEAR_START, 2036 + 1))
+    treatments = {lbl: _flow_sum(res[lbl], "treat_rate", years_range) for _, lbl in SCENARIOS}
+    new_infections = {lbl: _new_infections(res[lbl], pop_names, years_range) for _, lbl in SCENARIOS}
+    deaths_c_2036 = {}
+    hcc_c_2036 = {}
+    hepb_pop_2036 = {}
+    prev_2036 = {}
+    death_i_2036 = {}
+    hcc_i_2036 = {}
+    for _, lbl in SCENARIOS:
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        deaths_c_2036[lbl] = sum(v_dth[list(t_dth).index(y + 0.5)] for y in years_range)
+        t_hcc, v_hcc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_c_2036[lbl] = sum(v_hcc[list(t_hcc).index(y + 0.5)] for y in years_range)
+        t_hepb, v_hepb = _series_vals(res[lbl], pop_names, None, "hepb_pop")
+        hepb_pop_2036[lbl] = _value_at_year(t_hepb, v_hepb, 2036)
+        t_tot, v_tot = _series_vals(res[lbl], pop_names, None, "total_pop")
+        prev_2036[lbl] = hepb_pop_2036[lbl] / _value_at_year(t_tot, v_tot, 2036)
+        t_hc, v_hc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_i_2036[lbl] = _value_at_year(t_hc, v_hc, 2036)
+        t_dt, v_dt = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        death_i_2036[lbl] = _value_at_year(t_dt, v_dt, 2036)
+
+    table3b = [
+        ("Service delivery", None, None, None, "header"),
+        (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
+        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        ("Epidemiology", None, None, None, "header"),
+        (f"People with hepatitis B in {2036}", hepb_pop_2036[CSQ], hepb_pop_2036[ACT], d(hepb_pop_2036), "count"),
+        (f"Number of new hepatitis B infections, {YEAR_START}-{2036} (see note below table)",
+         new_infections[CSQ], new_infections[ACT], d(new_infections), "count"),
+        (f"Number of hepatitis B-related deaths, {YEAR_START}-{2036}", deaths_c_2036[CSQ], deaths_c_2036[ACT], d(deaths_c_2036), "count"),
+        (f"Number of hepatitis B-related liver cancers, {YEAR_START}-{2036}", hcc_c_2036[CSQ], hcc_c_2036[ACT], d(hcc_c_2036),
+         "count"),
+        (f"Hepatitis B prevalence among the whole population in {2036} (%)",
+         prev_2036[CSQ], prev_2036[ACT], d(prev_2036), "pct"),
+        (f"HCC incidence in single year of {2036} ",
+         hcc_i_2036[CSQ], hcc_i_2036[ACT], d(hcc_i_2036), "count"),
+        (f"HBV deaths in single year of {2036} ",
+         death_i_2036[CSQ], death_i_2036[ACT], d(death_i_2036), "count"),
+    ]
+
+    # ---- Table 3c: Service delivery and epi, 2027-2040 -------------------------------
+    years_range = list(range(YEAR_START, 2040 + 1))
+    treatments = {lbl: _flow_sum(res[lbl], "treat_rate", years_range) for _, lbl in SCENARIOS}
+    new_infections = {lbl: _new_infections(res[lbl], pop_names, years_range) for _, lbl in SCENARIOS}
+    deaths_c_2040 = {}
+    hcc_c_2040 = {}
+    hepb_pop_2040 = {}
+    prev_2040 = {}
+    death_i_2040 = {}
+    hcc_i_2040 = {}
+    for _, lbl in SCENARIOS:
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        deaths_c_2040[lbl] = sum(v_dth[list(t_dth).index(y + 0.5)] for y in years_range)
+        t_hcc, v_hcc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_c_2040[lbl] = sum(v_hcc[list(t_hcc).index(y + 0.5)] for y in years_range)
+        t_hepb, v_hepb = _series_vals(res[lbl], pop_names, None, "hepb_pop")
+        hepb_pop_2040[lbl] = _value_at_year(t_hepb, v_hepb, 2040)
+        t_tot, v_tot = _series_vals(res[lbl], pop_names, None, "total_pop")
+        prev_2040[lbl] = hepb_pop_2036[lbl] / _value_at_year(t_tot, v_tot, 2040)
+        t_hc, v_hc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_i_2040[lbl] = _value_at_year(t_hc, v_hc, 2040)
+        t_dt, v_dt = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        death_i_2040[lbl] = _value_at_year(t_dt, v_dt, 2040)
+
+    table3c = [
+        ("Service delivery", None, None, None, "header"),
+        (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
+        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        ("Epidemiology", None, None, None, "header"),
+        (f"People with hepatitis B in {2040}", hepb_pop_2040[CSQ], hepb_pop_2040[ACT], d(hepb_pop_2040), "count"),
+        (f"Number of new hepatitis B infections, {YEAR_START}-{2040} (see note below table)",
+         new_infections[CSQ], new_infections[ACT], d(new_infections), "count"),
+        (f"Number of hepatitis B-related deaths, {YEAR_START}-{2040}", deaths_c_2040[CSQ], deaths_c_2040[ACT], d(deaths_c_2040), "count"),
+        (f"Number of hepatitis B-related liver cancers, {YEAR_START}-{2040}", hcc_c_2040[CSQ], hcc_c_2040[ACT], d(hcc_c_2040),
+         "count"),
+        (f"Hepatitis B prevalence among the whole population in {2040} (%)",
+         prev_2040[CSQ], prev_2040[ACT], d(prev_2040), "pct"),
+        (f"HCC incidence in single year of {2040} ",
+         hcc_i_2040[CSQ], hcc_i_2040[ACT], d(hcc_i_2040), "count"),
+        (f"HBV deaths in single year of {2040} ",
+         death_i_2040[CSQ], death_i_2040[ACT], d(death_i_2040), "count"),
+    ]
+
+    # ---- Table 3d: Service delivery and epi, 2027-2050 -------------------------------
+    years_range = list(range(YEAR_START, 2050 + 1))
+    treatments = {lbl: _flow_sum(res[lbl], "treat_rate", years_range) for _, lbl in SCENARIOS}
+    new_infections = {lbl: _new_infections(res[lbl], pop_names, years_range) for _, lbl in SCENARIOS}
+    deaths_c_2050 = {}
+    hcc_c_2050 = {}
+    hepb_pop_2050 = {}
+    prev_2050 = {}
+    death_i_2050 = {}
+    hcc_i_2050 = {}
+    for _, lbl in SCENARIOS:
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        deaths_c_2050[lbl] = sum(v_dth[list(t_dth).index(y + 0.5)] for y in years_range)
+        t_hcc, v_hcc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_c_2050[lbl] = sum(v_hcc[list(t_hcc).index(y + 0.5)] for y in years_range)
+        t_hepb, v_hepb = _series_vals(res[lbl], pop_names, None, "hepb_pop")
+        hepb_pop_2050[lbl] = _value_at_year(t_hepb, v_hepb, 2050)
+        t_tot, v_tot = _series_vals(res[lbl], pop_names, None, "total_pop")
+        prev_2050[lbl] = hepb_pop_2036[lbl] / _value_at_year(t_tot, v_tot, 2050)
+        t_hc, v_hc = _series_vals(res[lbl], pop_names, None, "inc_hcc")
+        hcc_i_2050[lbl] = _value_at_year(t_hc, v_hc, 2050)
+        t_dt, v_dt = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        death_i_2050[lbl] = _value_at_year(t_dt, v_dt, 2050)
+
+    table3d = [
+        ("Service delivery", None, None, None, "header"),
+        (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
+        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        ("Epidemiology", None, None, None, "header"),
+        (f"People with hepatitis B in {2050}", hepb_pop_2050[CSQ], hepb_pop_2050[ACT], d(hepb_pop_2050), "count"),
+        (f"Number of new hepatitis B infections, {YEAR_START}-{2050} (see note below table)",
+         new_infections[CSQ], new_infections[ACT], d(new_infections), "count"),
+        (f"Number of hepatitis B-related deaths, {YEAR_START}-{2050}", deaths_c_2050[CSQ], deaths_c_2050[ACT], d(deaths_c_2050), "count"),
+        (f"Number of hepatitis B-related liver cancers, {YEAR_START}-{2050}", hcc_c_2050[CSQ], hcc_c_2050[ACT], d(hcc_c_2050),
+         "count"),
+        (f"Hepatitis B prevalence among the whole population in {2050} (%)",
+         prev_2050[CSQ], prev_2050[ACT], d(prev_2050), "pct"),
+        (f"HCC incidence in single year of {2050} ",
+         hcc_i_2050[CSQ], hcc_i_2050[ACT], d(hcc_i_2050), "count"),
+        (f"HBV deaths in single year of {2050} ",
+         death_i_2050[CSQ], death_i_2050[ACT], d(death_i_2050), "count"),
+    ]
+
+
+
+    # ---- Table 4a: costs and economic outcomes 2027-2030 ---------------------------------------------
+    dir_c_2030, test_c_2030, treat_c_2030, dism_c_2030, prem_c_2030, qaly_2030 = {},{},{},{},{},{}
+    years_range = list(range(YEAR_START, 2030 + 1))
+
+    for _, lbl in SCENARIOS:
+        t_dir, v_dir = _series_vals(res[lbl], pop_names, None, "direct_costs")
+        dir_c_2030[lbl] = sum(v_dir[list(t_dir).index(y + 0.5)] for y in years_range)
+        t_test, v_test = _series_vals(res[lbl], pop_names, None, "diag_cost")
+        test_c_2030[lbl] = sum(v_test[list(t_test).index(y + 0.5)] for y in years_range)
+        t_treat, v_treat = _series_vals(res[lbl], pop_names, None, "treat_cost")
+        treat_c_2030[lbl] = sum(v_treat[list(t_treat).index(y + 0.5)] for y in years_range)
+        t_dism, v_dism = _series_vals(res[lbl], pop_names, None, "dm_cost")
+        dism_c_2030[lbl] = sum(v_dism[list(t_dism).index(y + 0.5)] for y in years_range)
+        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "prod_loss")
+        prem_c_2030[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
+        t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
+        qaly_2030[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)
+
+    table4a = [
+        (f"Costs (million A$), {YEAR_START}-{2030}", None, None, None, "header"),
+        ("Total direct costs", dir_c_2030[CSQ], dir_c_2030[ACT], d(dir_c_2030), "count"),
+        ("HBV testing", test_c_2030[CSQ], test_c_2030[ACT], d(test_c_2030), "count"),
+        ("HBV treatment", treat_c_2030[CSQ], treat_c_2030[ACT], d(treat_c_2030), "count"),
+        ("HBV disease management", dism_c_2030[CSQ], dism_c_2030[ACT], d(dism_c_2030), "count"),
+        ("Societal costs", None, None, None, "header"),
+        ("Absenteeism + presenteeism", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Premature deaths", prem_c_2030[CSQ], prem_c_2030[ACT], d(prem_c_2030), "count"),
+        ("Cost-effectiveness", None, None, None, "header"),
+        ("Total QALYs", qaly_2030[CSQ], qaly_2030[ACT], d(qaly_2030), "count"),
+        (f"Direct costs per QALY gained at {2030}", "-", COST_NOTE, None, "text"),
+        ("Net economic benefit", NA, NA, NA, "text"),
+        (f"At {YEAR_END} (millions A$)", "-", NA, None, "text"),
+    ]
+
+    # ---- Table 4b: costs and economic outcomes 2027-2036 ---------------------------------------------
+    dir_c_2036, test_c_2036, treat_c_2036, dism_c_2036, prem_c_2036, qaly_2036 = {}, {}, {}, {}, {}, {}
+    years_range = list(range(YEAR_START, 2036 + 1))
+
     for _, lbl in SCENARIOS:
         t_dir, v_dir = _series_vals(res[lbl], pop_names, None, "direct_costs")
         dir_c_2036[lbl] = sum(v_dir[list(t_dir).index(y + 0.5)] for y in years_range)
@@ -127,8 +310,9 @@ def build_tables(results):
         prem_c_2036[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
         t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
         qaly_2036[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)
-    table4 = [
-        (f"Costs (million A$), {YEAR_START}-{YEAR_END}", None, None, None, "header"),
+
+    table4b = [
+        (f"Costs (million A$), {YEAR_START}-{2036}", None, None, None, "header"),
         ("Total direct costs", dir_c_2036[CSQ], dir_c_2036[ACT], d(dir_c_2036), "count"),
         ("HBV testing", test_c_2036[CSQ], test_c_2036[ACT], d(test_c_2036), "count"),
         ("HBV treatment", treat_c_2036[CSQ], treat_c_2036[ACT], d(treat_c_2036), "count"),
@@ -138,12 +322,81 @@ def build_tables(results):
         ("Premature deaths", prem_c_2036[CSQ], prem_c_2036[ACT], d(prem_c_2036), "count"),
         ("Cost-effectiveness", None, None, None, "header"),
         ("Total QALYs", qaly_2036[CSQ], qaly_2036[ACT], d(qaly_2036), "count"),
-        (f"Direct costs per QALY gained at {YEAR_END}", "-", COST_NOTE, None, "text"),
+        (f"Direct costs per QALY gained at {2036}", "-", COST_NOTE, None, "text"),
         ("Net economic benefit", NA, NA, NA, "text"),
         (f"At {YEAR_END} (millions A$)", "-", NA, None, "text"),
     ]
 
-    # ---- Table 5: progress towards targets, 2030 ------------------------------------------
+    # ---- Table 4c: costs and economic outcomes 2027-2040 ---------------------------------------------
+    dir_c_2040, test_c_2040, treat_c_2040, dism_c_2040, prem_c_2040, qaly_2040 = {}, {}, {}, {}, {}, {}
+    years_range = list(range(YEAR_START, 2040 + 1))
+
+    for _, lbl in SCENARIOS:
+        t_dir, v_dir = _series_vals(res[lbl], pop_names, None, "direct_costs")
+        dir_c_2040[lbl] = sum(v_dir[list(t_dir).index(y + 0.5)] for y in years_range)
+        t_test, v_test = _series_vals(res[lbl], pop_names, None, "diag_cost")
+        test_c_2040[lbl] = sum(v_test[list(t_test).index(y + 0.5)] for y in years_range)
+        t_treat, v_treat = _series_vals(res[lbl], pop_names, None, "treat_cost")
+        treat_c_2040[lbl] = sum(v_treat[list(t_treat).index(y + 0.5)] for y in years_range)
+        t_dism, v_dism = _series_vals(res[lbl], pop_names, None, "dm_cost")
+        dism_c_2040[lbl] = sum(v_dism[list(t_dism).index(y + 0.5)] for y in years_range)
+        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "prod_loss")
+        prem_c_2040[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
+        t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
+        qaly_2040[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)
+
+    table4c = [
+        (f"Costs (million A$), {YEAR_START}-{2040}", None, None, None, "header"),
+        ("Total direct costs", dir_c_2040[CSQ], dir_c_2040[ACT], d(dir_c_2040), "count"),
+        ("HBV testing", test_c_2040[CSQ], test_c_2040[ACT], d(test_c_2040), "count"),
+        ("HBV treatment", treat_c_2040[CSQ], treat_c_2040[ACT], d(treat_c_2040), "count"),
+        ("HBV disease management", dism_c_2040[CSQ], dism_c_2040[ACT], d(dism_c_2040), "count"),
+        ("Societal costs", None, None, None, "header"),
+        ("Absenteeism + presenteeism", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Premature deaths", prem_c_2040[CSQ], prem_c_2040[ACT], d(prem_c_2040), "count"),
+        ("Cost-effectiveness", None, None, None, "header"),
+        ("Total QALYs", qaly_2040[CSQ], qaly_2040[ACT], d(qaly_2040), "count"),
+        (f"Direct costs per QALY gained at {2040}", "-", COST_NOTE, None, "text"),
+        ("Net economic benefit", NA, NA, NA, "text"),
+        (f"At {YEAR_END} (millions A$)", "-", NA, None, "text"),
+    ]
+
+    # ---- Table 4d: costs and economic outcomes 2027-2050 ---------------------------------------------
+    dir_c_2050, test_c_2050, treat_c_2050, dism_c_2050, prem_c_2050, qaly_2050 = {}, {}, {}, {}, {}, {}
+    years_range = list(range(YEAR_START, 2050 + 1))
+
+    for _, lbl in SCENARIOS:
+        t_dir, v_dir = _series_vals(res[lbl], pop_names, None, "direct_costs")
+        dir_c_2050[lbl] = sum(v_dir[list(t_dir).index(y + 0.5)] for y in years_range)
+        t_test, v_test = _series_vals(res[lbl], pop_names, None, "diag_cost")
+        test_c_2050[lbl] = sum(v_test[list(t_test).index(y + 0.5)] for y in years_range)
+        t_treat, v_treat = _series_vals(res[lbl], pop_names, None, "treat_cost")
+        treat_c_2050[lbl] = sum(v_treat[list(t_treat).index(y + 0.5)] for y in years_range)
+        t_dism, v_dism = _series_vals(res[lbl], pop_names, None, "dm_cost")
+        dism_c_2050[lbl] = sum(v_dism[list(t_dism).index(y + 0.5)] for y in years_range)
+        t_prem, v_prem = _series_vals(res[lbl], pop_names, None, "prod_loss")
+        prem_c_2050[lbl] = sum(v_prem[list(t_prem).index(y + 0.5)] for y in years_range)
+        t_qaly, v_qaly = _series_vals(res[lbl], pop_names, None, "qalys_total")
+        qaly_2050[lbl] = sum(v_qaly[list(t_qaly).index(y + 0.5)] for y in years_range)
+
+    table4d = [
+        (f"Costs (million A$), {YEAR_START}-{2050}", None, None, None, "header"),
+        ("Total direct costs", dir_c_2050[CSQ], dir_c_2050[ACT], d(dir_c_2050), "count"),
+        ("HBV testing", test_c_2050[CSQ], test_c_2050[ACT], d(test_c_2050), "count"),
+        ("HBV treatment", treat_c_2050[CSQ], treat_c_2050[ACT], d(treat_c_2050), "count"),
+        ("HBV disease management", dism_c_2050[CSQ], dism_c_2050[ACT], d(dism_c_2050), "count"),
+        ("Societal costs", None, None, None, "header"),
+        ("Absenteeism + presenteeism", COST_NOTE, COST_NOTE, COST_NOTE, "text"),
+        ("Premature deaths", prem_c_2050[CSQ], prem_c_2050[ACT], d(prem_c_2050), "count"),
+        ("Cost-effectiveness", None, None, None, "header"),
+        ("Total QALYs", qaly_2050[CSQ], qaly_2050[ACT], d(qaly_2050), "count"),
+        (f"Direct costs per QALY gained at {2050}", "-", COST_NOTE, None, "text"),
+        ("Net economic benefit", NA, NA, NA, "text"),
+        (f"At {YEAR_END} (millions A$)", "-", NA, None, "text"),
+    ]
+
+
+    # ---- Table 5a: progress towards targets, 2030 ------------------------------------------
     diag_2030, ltc_2030, treat_2030 = {}, {}, {}
     inc_2030, inc_2015, mort_2030, mort_2015 = {}, {}, {}, {}
     for _, lbl in SCENARIOS:
@@ -166,7 +419,7 @@ def build_tables(results):
     inc_reduction = reduction(inc_2030, inc_2015)
     mort_reduction = reduction(mort_2030, mort_2015)
 
-    table5 = [
+    table5a = [
         ("Hepatitis B", None, None, None, "header"),
         ("% Diagnosed hepatitis B", "90%", diag_2030[CSQ], diag_2030[ACT], ("text", "pct", "pct")),
         ("% Linked to hepatitis B care", "80%", ltc_2030[CSQ], ltc_2030[ACT], ("text", "pct", "pct")),
@@ -177,10 +430,101 @@ def build_tables(results):
          "30%", mort_reduction[CSQ], mort_reduction[ACT], ("text", "pct", "pct")),
     ]
 
-    return table3, table4, table5
+    # ---- Table 5b: progress towards targets, 2036 ------------------------------------------
+    diag_2036, ltc_2036, treat_2036 = {}, {}, {}
+    inc_2036, mort_2036 = {}, {}
+    for _, lbl in SCENARIOS:
+        t_d, v_d = _cascade_vals(res[lbl], pop_names, None, "diagnosed")
+        diag_2036[lbl] = _value_at_year(t_d, v_d, 2036)
+        t_l, v_l = _cascade_vals(res[lbl], pop_names, None, "linked")
+        ltc_2036[lbl] = _value_at_year(t_l, v_l, 2036)
+        t_tr, v_tr = _cascade_vals(res[lbl], pop_names, None, "treated")
+        treat_2036[lbl] = _value_at_year(t_tr, v_tr, 2036)
+
+        inc_2036[lbl] = _new_infections_at_year(res[lbl], pop_names, 2036)
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        mort_2036[lbl] = _value_at_year(t_dth, v_dth, 2036)
 
 
-def write_excel(table3, table4, table5, save_path):
+    inc_reduction = reduction(inc_2036, inc_2015)
+    mort_reduction = reduction(mort_2036, mort_2015)
+
+    table5b = [
+        ("Hepatitis B", None, None, None, "header"),
+        ("% Diagnosed hepatitis B", "90%", diag_2036[CSQ], diag_2036[ACT], ("text", "pct", "pct")),
+        ("% Linked to hepatitis B care", "80%", ltc_2036[CSQ], ltc_2036[ACT], ("text", "pct", "pct")),
+        ("% On treatment for hepatitis B", "27%", treat_2036[CSQ], treat_2036[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B incidence by {2036} (vs {BASELINE_YEAR}) (see note below table)",
+         "95%", inc_reduction[CSQ], inc_reduction[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B mortality by {2036} (vs {BASELINE_YEAR})",
+         "30%", mort_reduction[CSQ], mort_reduction[ACT], ("text", "pct", "pct")),
+    ]
+
+    # ---- Table 5c: progress towards targets, 2040 ------------------------------------------
+    diag_2040, ltc_2040, treat_2040 = {}, {}, {}
+    inc_2040, mort_2040 = {}, {}
+    for _, lbl in SCENARIOS:
+        t_d, v_d = _cascade_vals(res[lbl], pop_names, None, "diagnosed")
+        diag_2040[lbl] = _value_at_year(t_d, v_d, 2040)
+        t_l, v_l = _cascade_vals(res[lbl], pop_names, None, "linked")
+        ltc_2040[lbl] = _value_at_year(t_l, v_l, 2040)
+        t_tr, v_tr = _cascade_vals(res[lbl], pop_names, None, "treated")
+        treat_2040[lbl] = _value_at_year(t_tr, v_tr, 2040)
+
+        inc_2040[lbl] = _new_infections_at_year(res[lbl], pop_names, 2040)
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        mort_2040[lbl] = _value_at_year(t_dth, v_dth, 2040)
+
+
+    inc_reduction = reduction(inc_2040, inc_2015)
+    mort_reduction = reduction(mort_2040, mort_2015)
+
+    table5c = [
+        ("Hepatitis B", None, None, None, "header"),
+        ("% Diagnosed hepatitis B", "90%", diag_2040[CSQ], diag_2040[ACT], ("text", "pct", "pct")),
+        ("% Linked to hepatitis B care", "80%", ltc_2040[CSQ], ltc_2040[ACT], ("text", "pct", "pct")),
+        ("% On treatment for hepatitis B", "27%", treat_2040[CSQ], treat_2040[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B incidence by {2040} (vs {BASELINE_YEAR}) (see note below table)",
+         "95%", inc_reduction[CSQ], inc_reduction[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B mortality by {2040} (vs {BASELINE_YEAR})",
+         "30%", mort_reduction[CSQ], mort_reduction[ACT], ("text", "pct", "pct")),
+    ]
+
+    # ---- Table 5d: progress towards targets, 2050 ------------------------------------------
+    diag_2050, ltc_2050, treat_2050 = {}, {}, {}
+    inc_2050, mort_2050 = {}, {}
+    for _, lbl in SCENARIOS:
+        t_d, v_d = _cascade_vals(res[lbl], pop_names, None, "diagnosed")
+        diag_2050[lbl] = _value_at_year(t_d, v_d, 2050)
+        t_l, v_l = _cascade_vals(res[lbl], pop_names, None, "linked")
+        ltc_2050[lbl] = _value_at_year(t_l, v_l, 2050)
+        t_tr, v_tr = _cascade_vals(res[lbl], pop_names, None, "treated")
+        treat_2050[lbl] = _value_at_year(t_tr, v_tr, 2050)
+
+        inc_2050[lbl] = _new_infections_at_year(res[lbl], pop_names, 2050)
+        t_dth, v_dth = _series_vals(res[lbl], pop_names, None, "hep_dth")
+        mort_2050[lbl] = _value_at_year(t_dth, v_dth, 2050)
+
+
+    inc_reduction = reduction(inc_2050, inc_2015)
+    mort_reduction = reduction(mort_2050, mort_2015)
+
+    table5d = [
+        ("Hepatitis B", None, None, None, "header"),
+        ("% Diagnosed hepatitis B", "90%", diag_2050[CSQ], diag_2050[ACT], ("text", "pct", "pct")),
+        ("% Linked to hepatitis B care", "80%", ltc_2050[CSQ], ltc_2050[ACT], ("text", "pct", "pct")),
+        ("% On treatment for hepatitis B", "27%", treat_2050[CSQ], treat_2050[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B incidence by {2050} (vs {BASELINE_YEAR}) (see note below table)",
+         "95%", inc_reduction[CSQ], inc_reduction[ACT], ("text", "pct", "pct")),
+        (f"Reduction in hepatitis B mortality by {2050} (vs {BASELINE_YEAR})",
+         "30%", mort_reduction[CSQ], mort_reduction[ACT], ("text", "pct", "pct")),
+    ]
+
+
+    return table3a, table3b,table3c, table3d, table4a, table4b, table4c, table4d, table5a, table5b, table5c, table5d
+
+
+def write_excel(table3a, table3b, table3c, table3d, table4a, table4b, table4c, table4d, table5a, table5b, table5c, table5d, save_path):
     import pandas as pd
     writer = pd.ExcelWriter(save_path, engine="xlsxwriter")
     workbook = writer.book
@@ -219,15 +563,47 @@ def write_excel(table3, table4, table5, save_path):
             worksheet.write(r + 1, 0, note, fmt_note)
         return r
 
-    write_sheet(
-        "Table 3", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"],
-        table3,
+    # Table 3a (2027-2030)
+    write_sheet("Table 3a_2030", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table3a,
         note=("Note: 'Number of new hepatitis B infections' depends on the calibrated force-of-infection "
-              "(foi_cal) - check it against run_scenarios.py's incidence panel before citing this figure."),
-    )
-    write_sheet("Table 4", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table4)
+              "(foi_cal) - check it against run_scenarios.py's incidence panel before citing this figure."),)
+
+    # Table 3b (2027-2036)
+    write_sheet("Table 3b_2036", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table3b,
+        note=("Note: 'Number of new hepatitis B infections' depends on the calibrated force-of-infection "
+              "(foi_cal) - check it against run_scenarios.py's incidence panel before citing this figure."),)
+    # Table 3c (2027-2040)
+    write_sheet("Table 3c_2040", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table3c,
+        note=("Note: 'Number of new hepatitis B infections' depends on the calibrated force-of-infection "
+              "(foi_cal) - check it against run_scenarios.py's incidence panel before citing this figure."),)
+    # Table 3d (2027-2050)
+    write_sheet("Table 3d_2050", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table3d,
+        note=("Note: 'Number of new hepatitis B infections' depends on the calibrated force-of-infection "
+              "(foi_cal) - check it against run_scenarios.py's incidence panel before citing this figure."),)
+
+    write_sheet("Table 4a_2030", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table4a)
+    write_sheet("Table 4b_2036", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table4b)
+    write_sheet("Table 4c_2040", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table4c)
+    write_sheet("Table 4d_2050", ["Indicator", "Continued status quo (Total)", "Action scenario (Total)", "Difference from status quo"], table4d)
+
+
+
     write_sheet(
-        "Table 5", ["Indicator", "Target", "Continued status quo", "Action scenario"], table5,
+        "Table 5a_2030", ["Indicator", "Target", "Continued status quo", "Action scenario"], table5a,
+        note="Note: incidence-reduction row inherits the same new-infections caveat as Table 3.",
+    )
+
+    write_sheet(
+        "Table 5b_2036", ["Indicator", "Target", "Continued status quo", "Action scenario"], table5b,
+        note="Note: incidence-reduction row inherits the same new-infections caveat as Table 3.",
+    )
+
+    write_sheet(
+        "Table 5c_2040", ["Indicator", "Target", "Continued status quo", "Action scenario"], table5c,
+        note="Note: incidence-reduction row inherits the same new-infections caveat as Table 3.",
+    )
+    write_sheet(
+        "Table 5d_2050", ["Indicator", "Target", "Continued status quo", "Action scenario"], table5d,
         note="Note: incidence-reduction row inherits the same new-infections caveat as Table 3.",
     )
 
@@ -238,9 +614,9 @@ def write_excel(table3, table4, table5, save_path):
 def main():
     out_dir = os.path.join(_get_github_folder(), "outputs")
     results = sc.load(os.path.join(out_dir, "hepaus_scenarios.pkl"))
-    table3, table4, table5 = build_tables(results)
+    table3a,table3b,table3c, table3d, table4a, table4b, table4c, table4d, table5a, table5b, table5c, table5d = build_tables(results)
     save_path = os.path.join(out_dir, "HBV_report_tables.xlsx")
-    write_excel(table3, table4, table5, save_path)
+    write_excel(table3a, table3b, table3c, table3d, table4a, table4b, table4c, table4d,table5a, table5b, table5c, table5d, save_path)
 
 
 if __name__ == "__main__":
