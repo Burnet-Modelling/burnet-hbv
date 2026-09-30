@@ -76,7 +76,7 @@ OUTCOMES = [
     ("treated", "treated", "On Antiviral Treatment", "count"),
     ("compensated", "compensated", "Compensated Cirrhosis", "count"),
     ("decompensated", "decompensated", "Decompensated Cirrhosis", "count"),
-    ("livercancer", "livercancer", "Liver Cancer", "count"),
+    ("inc_hcc", "inc_hcc", "New HCC Cases (annual)", "count"),
     ("hep_dth", "hep_dth", "HBV-Attributable Deaths (annual)", "count"),
     ("incidence", None, "New HBV Infections (annual)", "incidence"),
     ("pct_diagnosed", "diagnosed", "% Diagnosed (of all HBV)", "cascade"),
@@ -341,6 +341,69 @@ def plot_scenario_comparison(data, save_path):
     plt.close(fig)
 
 
+def plot_scenario_comparison_subset(data, save_path, panel_letters=("H", "I", "K", "L", "M"),
+                                     year_range=(2020, 2040), ncols=2):
+    """Same Status Quo vs. Action Scenario lines as plot_scenario_comparison(), but
+    restricted to a chosen subset of OUTCOMES panels (selected by their original panel
+    letter, i.e. their index in OUTCOMES) and a truncated year range - sized for an A4
+    page. Panel titles omit the letter prefix used in the full figure."""
+    all_letters = string.ascii_uppercase
+    wanted_idx = [all_letters.index(letter) for letter in panel_letters]
+    subset = [OUTCOMES[i] for i in wanted_idx]
+
+    nrows = -(-len(subset) // ncols)  # ceil division
+    fig, axes = plt.subplots(nrows, ncols, figsize=(7.2, 9.0), squeeze=False)
+    axes = axes.flatten()
+
+    scenario_lines = {}
+    data_handle = None
+    for idx, (key, code_name, display_name, kind) in enumerate(subset):
+        ax = axes[idx]
+        for scenario_key, label, color in [
+            (SCENARIOS[0][0], SCENARIOS[0][1], COLOR_STATUS_QUO),
+            (SCENARIOS[1][0], SCENARIOS[1][1], COLOR_ACTION),
+        ]:
+            (line,) = ax.plot(
+                data["model"][scenario_key][key]["t"],
+                data["model"][scenario_key][key]["vals"],
+                label=label, color=color, linewidth=1.8, solid_capstyle="round",
+            )
+            scenario_lines[label] = line
+
+        observed = data["data"].get(key)
+        if observed is not None:
+            obs_t, obs_v = observed
+            obs_t_f = [t for t in obs_t if year_range[0] <= t <= year_range[1]]
+            obs_v_f = [v for t, v in zip(obs_t, obs_v) if year_range[0] <= t <= year_range[1]]
+            if obs_t_f:
+                data_handle = ax.scatter(
+                    obs_t_f, obs_v_f, s=22, facecolor=COLOR_DATA, edgecolor="white",
+                    linewidth=0.6, zorder=5, label="Data",
+                )
+
+        ax.set_title(display_name, loc="left")
+        ax.set_ylim(bottom=0)
+        ax.set_xlim(*year_range)
+        ax.yaxis.set_major_formatter(_axis_formatter(kind))
+        ax.tick_params(axis="both", length=3, color="#4D4D4D")
+
+    for ax in axes[len(subset):]:
+        fig.delaxes(ax)
+
+    handles = [scenario_lines[label] for _, label in SCENARIOS]
+    labels = [label for _, label in SCENARIOS]
+    if data_handle is not None:
+        handles.append(data_handle)
+        labels.append("Data")
+    fig.legend(handles, labels, loc="upper center", ncol=len(handles), frameon=False, bbox_to_anchor=(0.5, 1.03))
+
+    fig.suptitle(f"HepAus model: Status Quo vs. Action Scenario, {year_range[0]}–{year_range[1]}",
+                 y=1.06, fontsize=12, fontweight="bold")
+    fig.tight_layout(rect=(0, 0, 1, 1))
+    fig.savefig(save_path, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_population_breakdown(breakdown, save_path):
     """One row per population group (plus a Total aggregate row), one column per
     BREAKDOWN_COLUMNS metric - Status Quo vs Action Scenario, with real data overlaid
@@ -479,6 +542,10 @@ def main():
     plot_path = os.path.join(figures_dir, "hepaus_scenarios_comparison.png")
     plot_scenario_comparison(data, plot_path)
     print(f"Saved comparison plot to {plot_path}")
+
+    subset_path = os.path.join(figures_dir, "hepaus_scenarios_comparison_HIKLM_2020-2040_A4.png")
+    plot_scenario_comparison_subset(data, subset_path)
+    print(f"Saved A4 subset comparison plot to {subset_path}")
 
     breakdown = extract_population_breakdown(results)
     breakdown_path = os.path.join(figures_dir, "hepaus_population_breakdown.png")

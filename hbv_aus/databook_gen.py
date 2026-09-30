@@ -44,7 +44,7 @@ def gen_db_hbv_v2_1():
     """
     # Import Framework to produce databook
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_240926.xlsx"
+    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_300926.xlsx"
     DATA_PATH  = _get_github_folder() + f"input data/"
 
     F = at.ProjectFramework(FW_PATH)
@@ -249,11 +249,11 @@ def gen_db_hbv_v2_1():
     trt_pops = [item for item in pops if item not in set_notrt]
 
     for pop in pops:
-        D.tdve["diag_measure"].ts[pop] = at.TimeSeries(t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-                                                       vals = care_data[care_data.par=="diag_measure"].iloc[:,1:].values.flatten().tolist(),
+        D.tdve["diag_measure"].ts[pop] = at.TimeSeries(t=[1980, 2024],
+                                                       vals = care_data[care_data.par=="diag_measure"].iloc[:,1:].stack().tolist(),
                                                        units = "N.A.")
-        D.tdve["ltc_measure"].ts[pop]= at.TimeSeries(t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-                                                       vals = care_data[care_data.par=="ltc_measure"].iloc[:,1:].values.flatten().tolist(),
+        D.tdve["ltc_measure"].ts[pop]= at.TimeSeries(t=[1980, 2024],
+                                                       vals = care_data[care_data.par=="ltc_measure"].iloc[:,1:].stack().tolist(),
                                                        units = "N.A.")
         D.tdve["diagnosed_meas"].ts[pop] = at.TimeSeries(t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
                                                        vals = care_data[care_data.par=="diagnosed_meas"].iloc[:,1:].values.flatten().tolist(),
@@ -262,16 +262,16 @@ def gen_db_hbv_v2_1():
                                                        vals = care_data[care_data.par=="linked_meas"].iloc[:,1:].values.flatten().tolist(),
                                                        units = "Fraction")
         if pop in trt_pops:
-            D.tdve["treat_measure"].ts[pop] = at.TimeSeries(t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-                                                            vals=care_data[care_data.par == "treat_measure"].iloc[:, 1:].values.flatten().tolist(),
+            D.tdve["treat_measure"].ts[pop] = at.TimeSeries(t=[1980, 2024],
+                                                            vals=care_data[care_data.par=="treat_measure"].iloc[:,1:].stack().tolist(),
                                                             units="N.A.")
             D.tdve["treat_cov"].ts[pop] = at.TimeSeries(t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
                                                             vals=care_data[care_data.par == "treat_cov"].iloc[:, 1:].values.flatten().tolist(),
                                                             units="Fraction")
         else:
             D.tdve["treat_measure"].ts[pop] = at.TimeSeries(
-                t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-                vals=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                t=[1980, 2024],
+                vals=[0, 0],
                 units="N.A.")
             D.tdve["treat_cov"].ts[pop] = at.TimeSeries(
                 t=[1980, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
@@ -345,7 +345,14 @@ def gen_db_hbv_v2_1():
         for pop in pops:
             D.tdve[par].ts[pop].assumption = temp_qaly["val"]
 
+    # Productivity loss due to HBV deaths
+    prod = pd.read_excel(DATA_PATH+f"economics_in.xlsx", sheet_name="productivity")
+    prod_pars = list(pd.unique(prod.par))
 
+    for par in prod_pars:
+        temp_prod = prod[prod.par==par]
+        for pop in pops:
+            D.tdve[par].ts[pop].assumption = temp_prod[pop]
 
 
     D.save(DB_PATH)
