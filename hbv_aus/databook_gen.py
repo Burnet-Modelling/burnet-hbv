@@ -44,7 +44,7 @@ def gen_db_hbv_v2_1():
     """
     # Import Framework to produce databook
     FW_PATH = _get_github_folder() + f"/framework/hbv_fw_v2.1_autosave.xlsx"
-    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_300926.xlsx"
+    DB_PATH  = _get_github_folder() + f"/databook/hbv_db_hepaus_211026.xlsx"
     DATA_PATH  = _get_github_folder() + f"input data/"
 
     F = at.ProjectFramework(FW_PATH)
@@ -302,6 +302,8 @@ def gen_db_hbv_v2_1():
         if par == "hep_dth":
             for pop in pops:
                 D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="N.A.")
+                D.tdve["dc_death"].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop]*0.22, units="N.A.")
+                D.tdve["hcc_death"].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop]*0.78, units="N.A.")
         else:
             for pop in pops:
                 D.tdve[par].ts[pop] = at.TimeSeries(t=temp["year"], vals=temp[pop], units="Fraction")

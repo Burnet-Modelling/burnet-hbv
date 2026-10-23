@@ -38,7 +38,7 @@ from matplotlib import pyplot as plt
 from hbv_aus.utils import _get_github_folder
 
 FW_PATH = "framework/hbv_fw_v2.1_autosave.xlsx"
-DB_PATH = "databook/hbv_db_hepaus_240926.xlsx"
+DB_PATH = "databook/hbv_db_hepaus_211026.xlsx"
 CAL_PATH = "calibrations/Y-factors/hbv_hepaus_calibrations.xlsx"
 
 SIM_START = 1980
@@ -51,7 +51,7 @@ CALIBRATION_STEPS = [
     #("imig_prev", "hepb_prev", None, 800),
     #("eh_si", "epos_total", None, 800),
     #("foi_cal", "hepb_prev", (0, 0.05), 800),
-    (["y_hcc", "y_cc"], "hep_dth", (0.01, 10), 800, "all"),
+    (["y_hcc", "y_cc"], ["dc_death", "hcc_death"], (0.01, 10), 800, "all"),
 ]
 
 # Characteristics to sanity-check pre- vs post-calibration fit against data
@@ -68,14 +68,14 @@ def calibrate(P, cal):
         par_names, measurable, bounds, max_time = step[:4]
         pop_name = step[4] if len(step) > 4 else None  # None = per-pop y_factors; "all" = shared meta_y_factor
         par_names = par_names if isinstance(par_names, list) else [par_names]
+        meas_names = measurable if isinstance(measurable, list) else [measurable]
         bounds = bounds or (0, 5)
         print(f"Calibrating {par_names} (pop={pop_name!r}) against {measurable} (maxtime={max_time}s)...")
         t0 = time.time()
         cal = P.calibrate(
             parset=cal,
             adjustables=[(name, pop_name, *bounds) for name in par_names],
-            measurables=[(measurable, None, 1.0, "fractional")],
-            max_time=max_time,
+            measurables=[(m, None, 1.0, "fractional") for m in meas_names],
             reltol=CALIBRATION_RELTOL,
         )
         print(f"  done in {time.time() - t0:.0f}s")

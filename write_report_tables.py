@@ -112,7 +112,7 @@ def build_tables(results):
     table3a = [
         ("Service delivery", None, None, None, "header"),
         (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
-        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        (f"Total number of initiated hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
         ("Epidemiology", None, None, None, "header"),
         (f"People with hepatitis B in {2030}", hepb_pop_2030[CSQ], hepb_pop_2030[ACT], d(hepb_pop_2030), "count"),
         (f"Number of new hepatitis B infections, {YEAR_START}-{2030} (see note below table)",
@@ -155,7 +155,7 @@ def build_tables(results):
     table3b = [
         ("Service delivery", None, None, None, "header"),
         (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
-        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        (f"Total number of initiated hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
         ("Epidemiology", None, None, None, "header"),
         (f"People with hepatitis B in {2036}", hepb_pop_2036[CSQ], hepb_pop_2036[ACT], d(hepb_pop_2036), "count"),
         (f"Number of new hepatitis B infections, {YEAR_START}-{2036} (see note below table)",
@@ -198,7 +198,7 @@ def build_tables(results):
     table3c = [
         ("Service delivery", None, None, None, "header"),
         (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
-        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        (f"Total number of initiated hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
         ("Epidemiology", None, None, None, "header"),
         (f"People with hepatitis B in {2040}", hepb_pop_2040[CSQ], hepb_pop_2040[ACT], d(hepb_pop_2040), "count"),
         (f"Number of new hepatitis B infections, {YEAR_START}-{2040} (see note below table)",
@@ -241,7 +241,7 @@ def build_tables(results):
     table3d = [
         ("Service delivery", None, None, None, "header"),
         (f"Total number of hepatitis B tests", NA, NA, NA, "text"),
-        (f"Total number of hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
+        (f"Total number of initiated hepatitis B treatments", treatments[CSQ], treatments[ACT], d(treatments), "count"),
         ("Epidemiology", None, None, None, "header"),
         (f"People with hepatitis B in {2050}", hepb_pop_2050[CSQ], hepb_pop_2050[ACT], d(hepb_pop_2050), "count"),
         (f"Number of new hepatitis B infections, {YEAR_START}-{2050} (see note below table)",
